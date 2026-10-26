@@ -76,7 +76,18 @@ function play(el) {
     .catch(() => refused.add(el));
 }
 if (typeof window !== 'undefined') {
-  const retry = () => refused.forEach(el => el.isConnected && el.src && onScreen(el) && play(el));
+  // a tap unlocks every refused video, so ones scrolled to later can start on their own;
+  // the off-screen ones are paused again straight away
+  const retry = () =>
+    refused.forEach(el => {
+      if (!el.isConnected || !el.src) return;
+      el.play?.()
+        .then(() => {
+          refused.delete(el);
+          if (!onScreen(el)) el.pause();
+        })
+        .catch(() => {});
+    });
   ['touchend', 'click', 'keydown'].forEach(type => window.addEventListener(type, retry, { passive: true }));
 }
 
