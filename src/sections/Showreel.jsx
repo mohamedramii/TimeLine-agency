@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { gsap, useGSAP } from '../lib/gsap';
+import { gsap, stickyRunway, useGSAP } from '../lib/gsap';
 import { lite, NO_PREF_QUERY, REDUCE_QUERY } from '../lib/prefs';
 import { Timestamp, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
@@ -12,6 +12,7 @@ const CENTER = 7; // col 2, row 1
 // "Canvas zoom-out": we start inside one reel, then pull the camera back to reveal the whole wall.
 export default function Showreel() {
   const root = useRef(null);
+  const runway = useRef(null);
   const wall = useRef(null);
   const open = usePlayer();
   const t = useT();
@@ -34,17 +35,16 @@ export default function Showreel() {
           : Math.min(1, (window.innerHeight * 1.05) / wall.current.offsetHeight, (window.innerWidth * 1.02) / wall.current.offsetWidth);
 
       gsap.set(wall.current, { xPercent: -50, yPercent: -50, scale: zoom });
+      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * 2.4);
 
       const mm = gsap.matchMedia();
       mm.add(NO_PREF_QUERY(), () => {
         const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: root.current,
-            start: 'top top',
-            end: '+=240%',
-            pin: true,
+            trigger: runway.current,
+            start: () => `top+=${sticky.lead()} top`,
+            end: 'bottom bottom',
             scrub: 1,
-            anticipatePin: 1,
             invalidateOnRefresh: true,
             onUpdate: self => {
               if (!liveRef.current && self.progress > 0.08) {
@@ -58,12 +58,12 @@ export default function Showreel() {
         gsap.fromTo(
           '[data-reel-enter]',
           { opacity: 1 },
-          { opacity: 0, ease: 'none', scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'top 15%', scrub: true } }
+          { opacity: 0, ease: 'none', scrollTrigger: { trigger: runway.current, start: 'top bottom', end: 'top 15%', scrub: true } }
         );
         gsap.fromTo(
           '[data-reel-title] > *',
           { y: 60, opacity: 0 },
-          { y: 0, opacity: 1, stagger: 0.1, ease: 'power2.out', scrollTrigger: { trigger: root.current, start: 'top 70%', end: 'top top', scrub: true } }
+          { y: 0, opacity: 1, stagger: 0.1, ease: 'power2.out', scrollTrigger: { trigger: runway.current, start: 'top 70%', end: 'top top', scrub: true } }
         );
         tl.fromTo(wall.current, { scale: zoom }, { scale: fit, ease: 'power2.inOut', duration: 0.62 }, 0.06)
           .fromTo(center, { '--r': '0px' }, { '--r': '22px', ease: 'none', duration: 0.4 }, 0.1)
@@ -79,15 +79,18 @@ export default function Showreel() {
         gsap.set(wall.current, { scale: fit });
         gsap.set('[data-reel-title]', { opacity: 0 });
       });
-      return () => mm.revert();
+      return () => {
+        sticky.kill();
+        mm.revert();
+      };
     },
     { scope: root }
   );
 
-  // GSAP wraps pinned sections in a pin-spacer; the outer div keeps React's DOM bookkeeping intact.
+  // The outer div is the scroll runway; the section stays put inside it (see stickyRunway).
   return (
-    <div>
-      <section id="showreel" ref={root} className="relative h-[100svh] overflow-hidden bg-night text-white">
+    <div id="showreel" ref={runway} className="relative">
+      <section ref={root} className="sticky top-0 h-[100svh] overflow-hidden bg-night text-white">
         <div
           ref={wall}
           dir="ltr"

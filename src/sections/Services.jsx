@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { gsap, useGSAP } from '../lib/gsap';
+import { gsap, stickyRunway, useGSAP } from '../lib/gsap';
 import { motionOff } from '../lib/prefs';
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import SplitText from '../components/reactbits/SplitText';
@@ -150,6 +150,7 @@ function ServiceCard({ s, look, open, t, media }) {
 // (leftwards in English, rightwards in Arabic).
 export default function Services() {
   const root = useRef(null);
+  const runway = useRef(null);
   const track = useRef(null);
   const [index, setIndex] = useState(1);
   const open = usePlayer();
@@ -165,14 +166,14 @@ export default function Services() {
       mm.add(motionOff() ? 'not all' : 'all', () => {
         const dir = rtl ? 1 : -1;
         const distance = () => track.current.scrollWidth - window.innerWidth;
+        const sticky = stickyRunway(runway.current, root.current, distance);
         const tween = gsap.to(track.current, {
           x: () => dir * distance(),
           ease: 'none',
           scrollTrigger: {
-            trigger: root.current,
-            start: 'top top',
-            end: () => `+=${distance()}`,
-            pin: true,
+            trigger: runway.current,
+            start: () => `top+=${sticky.lead()} top`,
+            end: 'bottom bottom',
             scrub: 1,
             invalidateOnRefresh: true,
             onUpdate: self => {
@@ -200,16 +201,17 @@ export default function Services() {
             }
           );
         });
+        return () => sticky.kill();
       });
       return () => mm.revert();
     },
     { scope: root }
   );
 
-  // GSAP wraps pinned sections in a pin-spacer; the outer div keeps React's DOM bookkeeping intact.
+  // The outer div is the scroll runway; the section stays put inside it (see stickyRunway).
   return (
-    <div>
-      <section id="services" ref={root} className="relative h-[100svh] overflow-hidden bg-paper">
+    <div id="services" ref={runway} className="relative">
+      <section ref={root} className="sticky top-0 h-[100svh] overflow-hidden bg-paper">
         <div className="flex h-full flex-col justify-center gap-5 pb-6 pt-16 md:gap-10 md:py-0">
           <div className="frame flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>

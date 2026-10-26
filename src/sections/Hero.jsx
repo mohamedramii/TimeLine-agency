@@ -1,5 +1,5 @@
 import { lazy, Suspense, useRef, useState } from 'react';
-import { gsap, SplitText, useGSAP } from '../lib/gsap';
+import { gsap, SplitText, stickyRunway, useGSAP } from '../lib/gsap';
 import { lite, NO_PREF_QUERY } from '../lib/prefs';
 import Silk from '../components/reactbits/Silk';
 import TrueFocus from '../components/reactbits/TrueFocus';
@@ -43,6 +43,7 @@ function Ruler() {
 
 export default function Hero({ ready }) {
   const root = useRef(null);
+  const runway = useRef(null);
   const stage = useRef(null);
   const progress = useRef(0);
   const open = usePlayer();
@@ -85,14 +86,14 @@ export default function Hero({ ready }) {
   // Scroll — the headline parts horizontally, the camera dives into the clock and night falls.
   useGSAP(
     () => {
+      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * 1.3);
       const mm = gsap.matchMedia();
       mm.add(NO_PREF_QUERY(), () => {
         const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: root.current,
-            start: 'top top',
-            end: '+=130%',
-            pin: true,
+            trigger: runway.current,
+            start: () => `top+=${sticky.lead()} top`,
+            end: 'bottom bottom',
             scrub: 0.8,
             onUpdate: self => (progress.current = self.progress)
           }
@@ -107,15 +108,18 @@ export default function Hero({ ready }) {
           .to('[data-silk]', { scale: 1.25, ease: 'none' }, 0)
           .to('[data-night]', { opacity: 1, ease: 'power1.in' }, 0.55);
       });
-      return () => mm.revert();
+      return () => {
+        sticky.kill();
+        mm.revert();
+      };
     },
     { scope: root }
   );
 
-  // GSAP wraps pinned sections in a pin-spacer; the outer div keeps React's DOM bookkeeping intact.
+  // The outer div is the scroll runway; the section stays put inside it (see stickyRunway).
   return (
-    <div>
-      <section id="top" ref={root} className="relative h-[100svh] min-h-[680px] overflow-hidden bg-paper">
+    <div id="top" ref={runway} className="relative">
+      <section ref={root} className="sticky top-0 h-[100svh] min-h-[680px] overflow-hidden bg-paper">
         {/* Sky silk */}
         <div data-silk className="absolute inset-0 ltr:origin-right rtl:origin-left">
           {lite ? (

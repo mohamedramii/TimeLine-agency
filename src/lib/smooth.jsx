@@ -10,12 +10,9 @@ export function SmoothScroll({ children }) {
 
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
-    // Touch screens: no Lenis (its touch mode lags on iOS). GSAP's normalizeScroll moves scrolling onto
-    // the JS thread so pins lock in the same frame instead of jumping (native momentum runs off-thread).
-    if (ScrollTrigger.isTouch === 1) {
-      ScrollTrigger.normalizeScroll(true);
-      return () => ScrollTrigger.normalizeScroll(false);
-    }
+    // Touch screens keep the browser's own scrolling: Lenis' touch mode and GSAP's normalizeScroll both
+    // make iOS scrolling feel heavy, and the sections now hold still with CSS sticky (see stickyRunway).
+    if (ScrollTrigger.isTouch === 1) return undefined;
     const instance = new Lenis({
       lerp: 0.085,
       wheelMultiplier: 0.95,
