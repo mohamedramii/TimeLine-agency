@@ -1,19 +1,70 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TIME LINE Marketing — Make every second count</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Arabic is the default language; main.jsx swaps title/description for ?lang=en -->
+    <title>تايم لاين ماركتنج — خلّي كل ثانية في براندك تِفرِق</title>
     <meta
       name="description"
-      content="TIME LINE is a content-first marketing agency from Alexandria. We script, shoot and scale scroll-stopping reels, campaigns and brand identities."
+      content="تايم لاين وكالة تسويق قايمة على المحتوى من إسكندرية: إنتاج ريلز، إدارة صفحات، تصميم بوستات وإعلانات سبونسر — وباقات كاملة تبدأ من 6,500 ج.م."
     />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://time-line-agency.vercel.app/" />
+    <link rel="alternate" hreflang="ar" href="https://time-line-agency.vercel.app/" />
+    <link rel="alternate" hreflang="en" href="https://time-line-agency.vercel.app/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://time-line-agency.vercel.app/" />
     <meta name="theme-color" content="#50B4E8" />
-    <meta property="og:title" content="TIME LINE Marketing" />
-    <meta property="og:description" content="Content that stops the scroll. Brands that people remember." />
-    <meta property="og:image" content="/brand/og.png" />
-    <link rel="icon" href="/favicon.ico" />
+    <meta name="author" content="TIME LINE Marketing" />
+
+    <!-- Social cards (WhatsApp, Facebook, LinkedIn, X) need absolute URLs -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TIME LINE Marketing" />
+    <meta property="og:url" content="https://time-line-agency.vercel.app/" />
+    <meta property="og:locale" content="ar_EG" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:title" content="تايم لاين ماركتنج — خلّي كل ثانية في براندك تِفرِق" />
+    <meta property="og:description" content="ريلز، إدارة صفحات، بوستات وسبونسر من إسكندرية. محتوى بيوقّف السكرول وباقات بتوفّر عليك." />
+    <meta property="og:image" content="https://time-line-agency.vercel.app/brand/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="تايم لاين ماركتنج — خلّي كل ثانية في براندك تِفرِق" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="تايم لاين ماركتنج — خلّي كل ثانية في براندك تِفرِق" />
+    <meta name="twitter:description" content="ريلز، إدارة صفحات، بوستات وسبونسر من إسكندرية." />
+    <meta name="twitter:image" content="https://time-line-agency.vercel.app/brand/og.jpg" />
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/brand/symbol.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Structured data: lets Google show the agency, its city and its packages -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "name": "TIME LINE Marketing",
+        "alternateName": "تايم لاين ماركتنج",
+        "description": "Content-first marketing agency in Alexandria: reels production, page management, post design and sponsored ads.",
+        "url": "https://time-line-agency.vercel.app/",
+        "logo": "https://time-line-agency.vercel.app/brand/symbol.svg",
+        "image": "https://time-line-agency.vercel.app/brand/og.jpg",
+        "address": { "@type": "PostalAddress", "addressLocality": "Alexandria", "addressCountry": "EG" },
+        "areaServed": "EG",
+        "priceRange": "EGP 500 – 12,000",
+        "knowsLanguage": ["ar", "en"],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Packages",
+          "itemListElement": [
+            { "@type": "Offer", "name": "Start — 8 reels, page management, 10 posts", "price": "6500", "priceCurrency": "EGP" },
+            { "@type": "Offer", "name": "Growth — 12 reels, page management, 10 posts", "price": "8000", "priceCurrency": "EGP" },
+            { "@type": "Offer", "name": "Scale — 20 reels, page management, 15 posts", "price": "12000", "priceCurrency": "EGP" }
+          ]
+        }
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -24,6 +75,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- read by crawlers and link previews that don't run JavaScript -->
+    <noscript>
+      <h1>تايم لاين ماركتنج — خلّي كل ثانية في براندك تِفرِق</h1>
+      <p>وكالة تسويق قايمة على المحتوى من إسكندرية: إنتاج ريلز، إدارة صفحات، تصميم بوستات وإعلانات سبونسر، وباقات كاملة تبدأ من 6,500 ج.م.</p>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
