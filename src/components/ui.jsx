@@ -3,6 +3,7 @@ import Magnet from './reactbits/Magnet';
 import { useScrollTo } from '../lib/smooth';
 import { brand } from '../content/shared';
 import { videoUrl } from '../lib/video';
+import { cachedUrl } from '../lib/preload';
 
 export const ArrowIcon = ({ className = '' }) => (
   <svg viewBox="0 0 16 16" className={`dir-flip ${className}`} width="14" height="14" fill="none" aria-hidden="true">
@@ -128,7 +129,7 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
     <video
       ref={ref}
       className={className}
-      src={load ? videoUrl(src) : undefined}
+      src={load ? cachedUrl(videoUrl(src)) : undefined}
       poster={poster}
       muted
       loop

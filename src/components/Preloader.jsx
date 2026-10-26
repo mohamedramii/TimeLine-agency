@@ -3,9 +3,17 @@ import { gsap, useGSAP } from '../lib/gsap';
 import { consumeQuickIntro, motionOff } from '../lib/prefs';
 import { useT } from '../i18n';
 import { Symbol } from './Logo';
+import { preloadVideos } from '../lib/preload';
+import { mediaFiles, showreelWall } from '../content/shared';
 
-// 00 → 100 clock sweep, then the symbol shrinks and flies into its place in the nav while the curtain lifts.
-// Only ever scaled down, so the vector symbol stays crisp the whole way.
+// What the counter waits for: the showreel wall's tiles plus the first service reels — about half the
+// page's video. Capped, so a slow connection never keeps visitors on the loader for long.
+const PRELOAD = [...new Set(showreelWall)].map(k => mediaFiles[k].tile).concat(mediaFiles.mamoBite.loop, mediaFiles.santos.loop);
+const MIN_TIME = 2.1; // the sweep never runs faster than this
+const MAX_WAIT = 7; // seconds; after this the page opens and the rest streams in
+
+// 00 → 100 clock sweep driven by real video loading, then the symbol shrinks and flies into its place in
+// the nav while the curtain lifts. Only ever scaled down, so the vector symbol stays crisp the whole way.
 export default function Preloader({ onDone }) {
   const root = useRef(null);
   const t = useT();
@@ -48,42 +56,58 @@ export default function Preloader({ onDone }) {
         return dest[key];
       };
 
-      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-      // a language switch reloads the page — replay the intro at double speed
-      if (consumeQuickIntro()) tl.timeScale(2.2);
+      // a language switch reloads the page — replay the intro faster (the videos are cached by then)
+      const speed = consumeQuickIntro() ? 2.2 : 1;
 
-      tl.from(parts, { scale: 0.6, opacity: 0, transformOrigin: '50% 50%', duration: 1, stagger: 0.12 }, 0.15)
-        .from('[data-ring]', { drawSVG: '0%', duration: 2.1, ease: 'power2.inOut' }, 0.2)
-        .to('[data-hand]', { rotate: 360, transformOrigin: '50% 50%', duration: 2.1, ease: 'power2.inOut' }, 0.2)
-        .to(
-          count,
-          {
-            v: 100,
-            duration: 2.1,
-            ease: 'power2.inOut',
-            onUpdate: () => (counter.textContent = String(Math.round(count.v)).padStart(3, '0'))
-          },
-          0.2
-        )
-        .from('[data-bar]', { scaleX: 0, duration: 2.1, ease: 'power2.inOut' }, 0.2)
-        .from('[data-copy]', { yPercent: 120, duration: 1, stagger: 0.08 }, 0.3)
-        .to('[data-copy]', { yPercent: -120, duration: 0.6, ease: 'power3.in', stagger: 0.04 }, 2.35)
-        .to('[data-dial], [data-hand]', { opacity: 0, scale: 0.85, duration: 0.4, ease: 'power2.in' }, 2.3)
-        .add(finish, 2.4)
-        .set(root.current, { pointerEvents: 'none' }, 2.4)
+      const intro = gsap.timeline({ defaults: { ease: 'expo.out' } }).timeScale(speed);
+      intro
+        .from(parts, { scale: 0.6, opacity: 0, transformOrigin: '50% 50%', duration: 1, stagger: 0.12 }, 0.15)
+        .from('[data-copy]', { yPercent: 120, duration: 1, stagger: 0.08 }, 0.3);
+
+      const exit = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } }).timeScale(speed);
+      exit
+        .to('[data-copy]', { yPercent: -120, duration: 0.6, ease: 'power3.in', stagger: 0.04 }, 0.05)
+        .to('[data-dial], [data-hand]', { opacity: 0, scale: 0.85, duration: 0.4, ease: 'power2.in' }, 0)
+        .add(finish, 0.1)
+        .set(root.current, { pointerEvents: 'none' }, 0.1)
         // the symbol shrinks into the nav on a gentle curve (x and y on different eases)…
-        .to(mark, { x: flight('x'), duration: 1.3, ease: 'power3.inOut' }, 2.45)
-        .to(mark, { y: flight('y'), scale: flight('scale'), duration: 1.3, ease: 'expo.inOut' }, 2.45)
+        .to(mark, { x: flight('x'), duration: 1.3, ease: 'power3.inOut' }, 0.15)
+        .to(mark, { y: flight('y'), scale: flight('scale'), duration: 1.3, ease: 'expo.inOut' }, 0.15)
         // …while the curtain lifts off the page, its sky edge leading
-        .to('[data-veil]', { yPercent: -100, duration: 1.25, ease: 'expo.inOut' }, 2.55)
-        .set(navMark, { autoAlpha: 1 }, 3.75)
-        .set(root.current, { display: 'none' }, 3.75);
+        .to('[data-veil]', { yPercent: -100, duration: 1.25, ease: 'expo.inOut' }, 0.25)
+        .set(navMark, { autoAlpha: 1 }, 1.45)
+        .set(root.current, { display: 'none' }, 1.45);
+
+      // Ring, hand, counter and bar follow the slower of: the minimum sweep time, or the videos loading.
+      let loaded = 0;
+      preloadVideos(PRELOAD, f => (loaded = f));
+      const sweep = gsap.parseEase('power2.inOut');
+      const start = performance.now();
+      gsap.set('[data-ring]', { drawSVG: '0%' });
+      gsap.set('[data-bar]', { scaleX: 0 });
+      gsap.set('[data-hand]', { transformOrigin: '50% 50%' });
+      const tick = () => {
+        const t = (performance.now() - start) / 1000;
+        const target = Math.min(sweep(Math.min(1, (t * speed) / MIN_TIME)), t > MAX_WAIT ? 1 : loaded);
+        count.v += (target - count.v) * 0.12;
+        if (target === 1 && count.v > 0.997) count.v = 1;
+        gsap.set('[data-ring]', { drawSVG: `${count.v * 100}%` });
+        gsap.set('[data-hand]', { rotate: count.v * 360 });
+        gsap.set('[data-bar]', { scaleX: count.v });
+        counter.textContent = String(Math.round(count.v * 100)).padStart(3, '0');
+        if (count.v === 1) {
+          gsap.ticker.remove(tick);
+          exit.play();
+        }
+      };
+      gsap.ticker.add(tick);
+      return () => gsap.ticker.remove(tick);
     },
     { scope: root }
   );
 
   return (
-    <div ref={root} className="fixed inset-0 z-[400]" aria-hidden="true">
+    <div ref={root} data-preloader className="fixed inset-0 z-[400]" aria-hidden="true">
       <div data-veil className="absolute inset-0 bg-paper">
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-5 md:p-10">
           <div className="overflow-hidden">
