@@ -64,7 +64,7 @@ export default function Nav({ ready }) {
       >
         <nav
           className={`frame flex h-[64px] items-center justify-between rounded-full ps-4 pe-2 transition-all duration-500 md:ps-6 ${
-            solid ? 'bg-white/75 shadow-[0_0_0_1px_rgba(223,232,239,0.9),0_18px_40px_-24px_rgba(23,63,90,0.35)] backdrop-blur-xl' : 'bg-transparent'
+            solid ? 'bg-white/75 shadow-[0_0_0_1px_rgba(223,232,239,0.9),0_18px_40px_-24px_rgba(23,63,90,0.35)] backdrop-blur-xl max-md:bg-white/95' : 'bg-transparent'
           }`}
           aria-label="Main"
         >

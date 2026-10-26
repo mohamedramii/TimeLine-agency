@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { gsap, useGSAP } from '../lib/gsap';
-import { NO_PREF_QUERY, REDUCE_QUERY } from '../lib/prefs';
+import { lite, NO_PREF_QUERY, REDUCE_QUERY } from '../lib/prefs';
 import { Timestamp, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
 import { chapterTimes, showreelWall } from '../content/shared';
@@ -98,6 +98,8 @@ export default function Showreel() {
               {col.map(({ key, i }) => {
                 const item = media[key];
                 const isCenter = i === CENTER;
+                // phones decode 9 reels at most: the outer columns sit half off screen, so they keep posters
+                const plays = live && (!lite || (c >= 1 && c <= 3));
                 return (
                   <button
                     type="button"
@@ -108,7 +110,7 @@ export default function Showreel() {
                     data-cursor="play"
                     aria-label={item.title}
                   >
-                    <Video src={isCenter ? item.loop : live ? item.tile : undefined} poster={item.poster} eager={isCenter} />
+                    <Video src={isCenter ? item.loop : plays ? item.tile : undefined} poster={item.poster} eager={isCenter} />
                     {isCenter && (
                       <span data-reel-shade className="absolute inset-0 bg-gradient-to-b from-night/40 via-night/10 to-night/60" />
                     )}

@@ -10,15 +10,16 @@ export function SmoothScroll({ children }) {
 
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
-    // syncTouch: on phones the finger drives Lenis too, instead of native momentum scrolling that runs
-    // off the main thread — otherwise pinned sections lock a frame late and jump up and down (iOS).
+    // Touch screens: no Lenis (its touch mode lags on iOS). GSAP's normalizeScroll moves scrolling onto
+    // the JS thread so pins lock in the same frame instead of jumping (native momentum runs off-thread).
+    if (ScrollTrigger.isTouch === 1) {
+      ScrollTrigger.normalizeScroll(true);
+      return () => ScrollTrigger.normalizeScroll(false);
+    }
     const instance = new Lenis({
       lerp: 0.085,
       wheelMultiplier: 0.95,
-      touchMultiplier: 1,
-      smoothWheel: true,
-      syncTouch: true,
-      syncTouchLerp: 0.09
+      smoothWheel: true
     });
     instance.on('scroll', ScrollTrigger.update);
     const tick = time => instance.raf(time * 1000);

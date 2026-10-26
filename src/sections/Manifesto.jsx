@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { gsap, SplitText, useGSAP } from '../lib/gsap';
-import { NO_PREF_QUERY } from '../lib/prefs';
+import { lite, NO_PREF_QUERY } from '../lib/prefs';
 import LightRays from '../components/reactbits/LightRays';
 import { Cross, Timestamp } from '../components/ui';
 import { chapterTimes } from '../content/shared';
@@ -49,6 +49,9 @@ export default function Manifesto() {
     <div className="relative z-30 -mt-[35svh]">
       <section id="manifesto" ref={root} className="relative -mt-px flex min-h-[100svh] items-center overflow-hidden bg-night py-[14vh] text-white">
         <div className="pointer-events-none absolute inset-0 opacity-70">
+          {lite ? (
+            <div className="h-full w-full bg-[radial-gradient(70%_55%_at_50%_0%,rgba(80,180,232,0.45)_0%,rgba(80,180,232,0.12)_45%,transparent_75%)]" />
+          ) : (
           <LightRays
             raysOrigin="top-center"
             raysColor="#50B4E8"
@@ -62,6 +65,7 @@ export default function Manifesto() {
             maxDevicePixelRatio={0.75}
             intro={false}
           />
+          )}
         </div>
         <div data-manifesto-body className="frame relative origin-center">
           <Cross className="-left-[5px] -top-[60px] hidden md:block" />

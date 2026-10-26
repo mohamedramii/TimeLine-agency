@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { gsap, useGSAP } from '../lib/gsap';
-import { NO_PREF_QUERY } from '../lib/prefs';
+import { lite, NO_PREF_QUERY } from '../lib/prefs';
 import { useScrollTo } from '../lib/smooth';
 import Iridescence from '../components/reactbits/Iridescence';
 import SpotlightCard from '../components/reactbits/SpotlightCard';
@@ -203,7 +203,11 @@ export default function Pricing() {
           {/* Sponsor — priced on contact */}
           <div data-price-extra className="relative flex min-h-[380px] flex-col overflow-hidden rounded-[var(--radius-card)] p-7 text-white shadow-[var(--shadow-lift)] md:p-9">
             <div className="absolute inset-0">
-              <Iridescence color={[0.31, 0.7, 0.91]} speed={0.6} amplitude={0.12} mouseReact resolution={0.6} />
+              {lite ? (
+                <div className="h-full w-full bg-[linear-gradient(135deg,#7cc8ef_0%,#50b4e8_45%,#2f93cc_100%)]" />
+              ) : (
+                <Iridescence color={[0.31, 0.7, 0.91]} speed={0.6} amplitude={0.12} mouseReact resolution={0.6} />
+              )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-b from-sky-700/25 via-sky-600/10 to-sky-950/60" />
             <div className="relative flex items-center justify-between">

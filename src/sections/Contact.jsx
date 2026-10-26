@@ -7,7 +7,7 @@ import { Wordmark } from '../components/Logo';
 import { LiveClock, Pill, Timestamp } from '../components/ui';
 import { brand, chapterTimes, navTargets } from '../content/shared';
 import { useScrollTo } from '../lib/smooth';
-import { switchLang } from '../lib/prefs';
+import { lite, switchLang } from '../lib/prefs';
 import { useT } from '../i18n';
 
 function Field({ label, ...props }) {
@@ -92,7 +92,7 @@ export default function Contact() {
   return (
     <section id="contact" ref={root} className="relative overflow-hidden bg-night pt-10 text-white">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[70%] opacity-60">
-        <Threads color={[0.31, 0.7, 0.91]} amplitude={1.2} distance={0.3} lineCount={40} speed={0.4} />
+        {!lite && <Threads color={[0.31, 0.7, 0.91]} amplitude={1.2} distance={0.3} lineCount={40} speed={0.4} />}
       </div>
 
       <div className="relative -mx-4 text-sky-500" dir={t.dir}>

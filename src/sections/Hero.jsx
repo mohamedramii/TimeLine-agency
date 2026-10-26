@@ -1,6 +1,6 @@
 import { lazy, Suspense, useRef, useState } from 'react';
 import { gsap, SplitText, useGSAP } from '../lib/gsap';
-import { NO_PREF_QUERY } from '../lib/prefs';
+import { lite, NO_PREF_QUERY } from '../lib/prefs';
 import Silk from '../components/reactbits/Silk';
 import TrueFocus from '../components/reactbits/TrueFocus';
 import { LiveClock, Pill, PlayIcon, Video } from '../components/ui';
@@ -23,7 +23,7 @@ const Stars = () => (
 function Ruler() {
   const ticks = Array.from({ length: 121 });
   return (
-    <div dir="ltr" className="ruler flex items-end gap-[9px] whitespace-nowrap will-change-transform">
+    <div dir="ltr" className="ruler flex items-end gap-[9px] whitespace-nowrap will-change-transform max-md:hidden">
       {ticks.map((_, i) => {
         const major = i % 10 === 0;
         return (
@@ -118,6 +118,9 @@ export default function Hero({ ready }) {
       <section id="top" ref={root} className="relative h-[100svh] min-h-[680px] overflow-hidden bg-paper">
         {/* Sky silk */}
         <div data-silk className="absolute inset-0 ltr:origin-right rtl:origin-left">
+          {lite ? (
+            <div className="h-full w-full bg-[radial-gradient(120%_70%_at_85%_15%,#bfe6fa_0%,#7cc8ef_38%,#56b7e9_70%)]" />
+          ) : (
           <Silk
             lightMode
             color="#56b7e9"
@@ -132,6 +135,7 @@ export default function Hero({ ready }) {
             intro={false}
             dpr={0.75}
           />
+          )}
         </div>
         <div className="hero-veil pointer-events-none absolute inset-0" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-paper to-transparent" />

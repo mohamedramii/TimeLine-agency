@@ -6,9 +6,9 @@ import { Symbol } from './Logo';
 import { preloadVideos } from '../lib/preload';
 import { mediaFiles, showreelWall } from '../content/shared';
 
-// What the counter waits for: the showreel wall's tiles plus the first service reels — about half the
-// page's video. Capped, so a slow connection never keeps visitors on the loader for long.
-const PRELOAD = [...new Set(showreelWall)].map(k => mediaFiles[k].tile).concat(mediaFiles.mamoBite.loop, mediaFiles.santos.loop);
+// What the counter waits for: the showreel wall's tiles (the service cards reuse them) plus the first
+// case study's reels — about half the page's video. Capped, so a slow connection never keeps visitors on the loader for long.
+const PRELOAD = [...new Set(showreelWall)].map(k => mediaFiles[k].tile).concat(mediaFiles.zatPour.loop, mediaFiles.zatIced.loop);
 const MIN_TIME = 2.1; // the sweep never runs faster than this
 const MAX_WAIT = 7; // seconds; after this the page opens and the rest streams in
 

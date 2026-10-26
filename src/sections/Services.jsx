@@ -38,14 +38,14 @@ const TONES = {
 function Dashboard({ d }) {
   const bars = [38, 52, 44, 66, 58, 81, 74, 96];
   return (
-    <div className="rounded-2xl bg-white/[0.06] p-4 ring-1 ring-white/10">
+    <div className="rounded-2xl bg-white/[0.06] p-3 ring-1 ring-white/10 md:p-4">
       <div className="flex items-center justify-between">
         <span className="mono-label !text-[10px] text-white/50">{d.label}</span>
         <span dir="ltr" className="rounded-full bg-sky-500 px-2 py-0.5 text-[11px] font-semibold text-white">
           4.6x
         </span>
       </div>
-      <div className="mt-4 flex h-28 items-end gap-2">
+      <div className="mt-3 flex h-12 items-end gap-2 md:mt-4 md:h-28">
         {bars.map((b, i) => (
           <span
             key={i}
@@ -54,7 +54,7 @@ function Dashboard({ d }) {
           />
         ))}
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-2 text-[11px] text-white/60">
+      <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] text-white/60 md:mt-4">
         {[
           [d.ctr, '3.8%'],
           [d.cpa, '−42%'],
@@ -88,24 +88,24 @@ function ServiceCard({ s, look, open, t, media }) {
     <SpotlightCard
       theme={tone.theme}
       spotlightColor={tone.spot}
-      className={`service-card !rounded-[30px] !p-0 flex min-h-[520px] w-[min(500px,84vw)] shrink-0 flex-col md:h-[min(64svh,600px)] md:min-h-0 ${tone.text}`}
+      className={`service-card !rounded-[30px] !p-0 flex h-full max-h-[540px] w-[min(500px,84vw)] shrink-0 flex-col md:h-[min(64svh,600px)] md:max-h-none ${tone.text}`}
       style={{
         '--spotlight-card-surface': tone.surface,
         '--spotlight-card-shadow': look.tone === 'light' ? 'var(--shadow-soft)' : 'var(--shadow-lift)',
         '--spotlight-card-border': look.tone === 'light' ? 'var(--color-line)' : 'rgba(255,255,255,0.08)'
       }}
     >
-      <div className="flex items-start justify-between p-7 pb-0 md:p-8 md:pb-0">
-        <span dir="ltr" className="display font-sans text-6xl opacity-90 md:text-7xl">
+      <div className="flex items-start justify-between p-5 pb-0 md:p-8 md:pb-0">
+        <span dir="ltr" className="display font-sans text-5xl opacity-90 md:text-7xl">
           {look.no}
         </span>
         <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone.chip}`}>{priceTag(look, t.services.priceTags)}</span>
       </div>
-      <div className="flex flex-1 flex-col-reverse gap-5 p-7 sm:flex-row md:p-8">
+      <div className="flex min-h-0 flex-1 flex-row gap-4 p-5 md:gap-5 md:p-8">
         <div className="flex min-w-0 flex-1 flex-col">
-          <h3 className="mt-auto text-[28px] font-medium leading-[1.1] tracking-[-0.03em] md:text-[34px]">{s.title}</h3>
-          <p className={`mt-3 text-[15px] leading-relaxed ${tone.sub}`}>{text}</p>
-          <div className="mt-5 flex flex-wrap gap-1.5">
+          <h3 className="mt-auto text-[23px] font-medium leading-[1.15] tracking-[-0.03em] md:text-[34px]">{s.title}</h3>
+          <p className={`mt-2 text-[14px] leading-relaxed md:mt-3 md:text-[15px] ${tone.sub}`}>{text}</p>
+          <div className="mt-5 hidden flex-wrap gap-1.5 sm:flex">
             {s.tags.map(tag => (
               <span key={tag} className={`rounded-full px-3 py-1 text-[12px] font-medium ${tone.chip}`}>
                 {tag}
@@ -124,7 +124,7 @@ function ServiceCard({ s, look, open, t, media }) {
           <button
             type="button"
             onClick={() => open(item)}
-            className="reel mt-auto w-[42%] shrink-0 !rounded-[20px] sm:w-[38%]"
+            className="reel mt-auto w-[36%] shrink-0 !rounded-[20px] sm:w-[38%]"
             data-cursor="play"
             aria-label={item.title}
           >
@@ -132,13 +132,13 @@ function ServiceCard({ s, look, open, t, media }) {
           </button>
         )}
         {image && (
-          <div className="mt-auto w-[46%] shrink-0 overflow-hidden rounded-[20px] shadow-[var(--shadow-lift)] sm:w-[40%]">
+          <div className="mt-auto w-[38%] shrink-0 overflow-hidden rounded-[20px] shadow-[var(--shadow-lift)] sm:w-[40%]">
             <img src={image.poster} alt={image.title} loading="lazy" className="aspect-[3/4] h-full w-full object-cover" />
           </div>
         )}
       </div>
       {look.dashboard && (
-        <div className="px-7 pb-7 md:px-8 md:pb-8">
+        <div className="px-5 pb-5 md:px-8 md:pb-8">
           <Dashboard d={t.services.dashboard} />
         </div>
       )}
@@ -162,7 +162,7 @@ export default function Services() {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add(motionOff() ? 'not all' : '(min-width: 768px)', () => {
+      mm.add(motionOff() ? 'not all' : 'all', () => {
         const dir = rtl ? 1 : -1;
         const distance = () => track.current.scrollWidth - window.innerWidth;
         const tween = gsap.to(track.current, {
@@ -209,12 +209,12 @@ export default function Services() {
   // GSAP wraps pinned sections in a pin-spacer; the outer div keeps React's DOM bookkeeping intact.
   return (
     <div>
-      <section id="services" ref={root} className="relative overflow-hidden bg-paper md:h-[100svh]">
-        <div className="flex h-full flex-col justify-center gap-10 py-24 md:py-0">
+      <section id="services" ref={root} className="relative h-[100svh] overflow-hidden bg-paper">
+        <div className="flex h-full flex-col justify-center gap-5 pb-6 pt-16 md:gap-10 md:py-0">
           <div className="frame flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <Timestamp time={chapterTimes[3]} label={t.chapters[3]} />
-              <h2 className="display mt-5 max-w-[16ch] text-[11vw] md:text-[4.8vw] xl:text-[4.6rem]">
+              <h2 className="display mt-3 max-w-[20ch] text-[7.6vw] md:mt-5 md:max-w-[16ch] md:text-[4.8vw] xl:text-[4.6rem]">
                 <SplitText key={t.lang} text={sv.title} tag="span" textAlign="start" splitType="words" delay={40} className="!inline" />{' '}
                 <span className="serif-accent text-sky-500">{sv.accent}</span>
               </h2>
@@ -230,7 +230,7 @@ export default function Services() {
 
           <div
             ref={track}
-            className="flex gap-5 overflow-x-auto px-[var(--gutter)] pb-4 [scrollbar-width:none] md:overflow-visible md:pb-0"
+            className="flex min-h-0 flex-1 gap-4 px-[var(--gutter)] md:flex-none md:gap-5"
             data-cursor="drag"
           >
             {sv.items.map((s, i) => (
@@ -245,7 +245,7 @@ export default function Services() {
             </div>
           </div>
 
-          <div className="frame hidden md:block">
+          <div className="frame">
             <div className="h-px w-full bg-line">
               <div data-svc-progress className="h-px scale-x-0 bg-sky-500 ltr:origin-left rtl:origin-right" />
             </div>

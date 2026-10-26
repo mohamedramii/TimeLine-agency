@@ -41,6 +41,10 @@ export function switchLang(lang) {
 // Motion is always on — the movement is the product, so the OS "reduced motion" hint is ignored.
 export const motionOff = () => false;
 
+// Phones get static gradients instead of the WebGL backgrounds: pinned sections are moved from
+// JavaScript there, and every millisecond of GPU/main-thread work shows up as scroll stutter.
+export const lite = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+
 export function consumeQuickIntro() {
   const quick = read('sessionStorage', QUICK_KEY) === '1';
   if (quick) {
