@@ -1,8 +1,11 @@
 // Language-independent data: media files, contact details, structure.
 // Copy lives in en.js / ar.js. Numbers, prices and testimonials there marked SAMPLE are placeholders.
 
+import { lite } from '../lib/prefs';
+
+// Phones play the 7-second 360p cut everywhere; the long 720p loop is for bigger screens.
 const m = (name, full) => ({
-  loop: `/media/${name}.mp4`,
+  loop: lite ? `/media/${name}-tile.mp4` : `/media/${name}.mp4`,
   tile: `/media/${name}-tile.mp4`,
   poster: `/media/${name}.webp`,
   full: full ? `/media/${name}-full.mp4` : `/media/${name}.mp4`

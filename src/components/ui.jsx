@@ -96,6 +96,7 @@ if (typeof window !== 'undefined') {
 export function Video({ src, poster, className = '', eager = false, ...rest }) {
   const ref = useRef(null);
   const [load, setLoad] = useState(eager);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -125,20 +126,25 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
     if (onScreen(el)) play(el);
   }, [src, load]);
 
+  // The poster is a real image underneath: it shows at once (iPhones draw nothing for a <video> without a
+  // source), and the clip fades in over it once frames are actually playing.
   return (
-    <video
-      ref={ref}
-      className={className}
-      src={load ? cachedUrl(videoUrl(src)) : undefined}
-      poster={poster}
-      muted
-      loop
-      playsInline
-      autoPlay={eager}
-      preload={eager ? 'auto' : 'none'}
-      aria-hidden="true"
-      {...rest}
-    />
+    <>
+      {poster && <img src={poster} alt="" aria-hidden="true" className={className} decoding="async" />}
+      <video
+        ref={ref}
+        className={`transition-opacity duration-500 ${playing ? 'opacity-100' : 'opacity-0'} ${className}`}
+        src={load && src ? cachedUrl(videoUrl(src)) : undefined}
+        muted
+        loop
+        playsInline
+        autoPlay={eager}
+        preload={eager ? 'auto' : 'none'}
+        onPlaying={() => setPlaying(true)}
+        aria-hidden="true"
+        {...rest}
+      />
+    </>
   );
 }
 
