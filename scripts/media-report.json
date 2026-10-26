@@ -1,0 +1,208 @@
+{
+ "zat-final|loop|h264": {
+  "crf": 22,
+  "size": 767510,
+  "vmaf": 91.99,
+  "min": 78.8
+ },
+ "zat-final|loop|av1": {
+  "crf": 28,
+  "size": 693114,
+  "vmaf": 92.56,
+  "min": 79.0
+ },
+ "zat-final|tile|h264": {
+  "crf": 22,
+  "size": 259437,
+  "vmaf": 92.15,
+  "min": 76.8
+ },
+ "zat-final|tile|av1": {
+  "crf": 28,
+  "size": 269154,
+  "vmaf": 92.67,
+  "min": 77.2
+ },
+ "zat-pour|loop|h264": {
+  "crf": 24,
+  "size": 823600,
+  "source": "measured level"
+ },
+ "mamo-bite|loop|h264": {
+  "crf": 24,
+  "size": 2352399,
+  "source": "measured level"
+ },
+ "santos|loop|h264": {
+  "crf": 24,
+  "size": 2669834,
+  "source": "measured level"
+ },
+ "mamo-bowl|loop|h264": {
+  "crf": 26,
+  "size": 2820956,
+  "source": "measured level"
+ },
+ "zat-pour|loop|av1": {
+  "crf": 31,
+  "size": 457940,
+  "source": "measured level"
+ },
+ "zat-pour|tile|h264": {
+  "crf": 26,
+  "size": 168561,
+  "vmaf": 93.35,
+  "ceiling": 97.25
+ },
+ "zat-pour|tile|av1": {
+  "crf": 42,
+  "size": 118454,
+  "vmaf": 93.48,
+  "ceiling": 97.25
+ },
+ "talk|loop|h264": {
+  "crf": 22,
+  "size": 2175740,
+  "source": "measured level"
+ },
+ "santos|loop|av1": {
+  "crf": 34,
+  "size": 1948815,
+  "source": "measured level"
+ },
+ "santos|tile|h264": {
+  "crf": 24,
+  "size": 1056235,
+  "vmaf": 94.87,
+  "ceiling": 98.6
+ },
+ "santos|tile|av1": {
+  "crf": 36,
+  "size": 755137,
+  "vmaf": 95.45,
+  "ceiling": 98.6
+ },
+ "santos|full|h264": {
+  "crf": 24,
+  "size": 3448239,
+  "source": "measured level"
+ },
+ "mamo-bite|loop|av1": {
+  "crf": 34,
+  "size": 1594949,
+  "source": "measured level"
+ },
+ "mamo-bite|tile|h264": {
+  "crf": 24,
+  "size": 806523,
+  "vmaf": 94.67,
+  "ceiling": 97.93
+ },
+ "talk|loop|av1": {
+  "crf": 30,
+  "size": 1099406,
+  "source": "measured level"
+ },
+ "talk|tile|h264": {
+  "crf": 22,
+  "size": 695716,
+  "vmaf": 95.05,
+  "ceiling": 97.78
+ },
+ "mamo-bite|tile|av1": {
+  "crf": 39,
+  "size": 428278,
+  "vmaf": 94.5,
+  "ceiling": 97.93
+ },
+ "mamo-bowl|loop|av1": {
+  "crf": 34,
+  "size": 2237887,
+  "source": "measured level"
+ },
+ "mamo-bowl|tile|h264": {
+  "crf": 24,
+  "size": 1292186,
+  "vmaf": 96.67,
+  "ceiling": 99.55
+ },
+ "santos|full|av1": {
+  "crf": 34,
+  "size": 2465571,
+  "source": "measured level"
+ },
+ "talk|tile|av1": {
+  "crf": 36,
+  "size": 328474,
+  "vmaf": 93.25,
+  "ceiling": 97.78
+ },
+ "mamo-bowl|tile|av1": {
+  "crf": 36,
+  "size": 908518,
+  "vmaf": 96.45,
+  "ceiling": 99.55
+ },
+ "mamo-bite|full|h264": {
+  "crf": 24,
+  "size": 9324675,
+  "source": "measured level"
+ },
+ "alex-vlog|loop|h264": {
+  "crf": 24,
+  "size": 3210964,
+  "source": "measured level"
+ },
+ "mamo-bowl|full|h264": {
+  "crf": 26,
+  "size": 5290387,
+  "source": "measured level"
+ },
+ "talk|full|h264": {
+  "crf": 22,
+  "size": 7508587,
+  "source": "measured level"
+ },
+ "alex-vlog|loop|av1": {
+  "crf": 32,
+  "size": 2440882,
+  "source": "measured level"
+ },
+ "alex-vlog|tile|h264": {
+  "crf": 24,
+  "size": 1222689,
+  "vmaf": 95.28,
+  "ceiling": 98.61
+ },
+ "alex-vlog|tile|av1": {
+  "crf": 36,
+  "size": 797144,
+  "vmaf": 95.28,
+  "ceiling": 98.61
+ },
+ "alex-vlog|full|h264": {
+  "crf": 24,
+  "size": 14548816,
+  "source": "measured level"
+ },
+ "mamo-bowl|full|av1": {
+  "crf": 34,
+  "size": 4058040,
+  "source": "measured level"
+ },
+ "talk|full|av1": {
+  "crf": 30,
+  "size": 3637454,
+  "source": "measured level"
+ },
+ "mamo-bite|full|av1": {
+  "crf": 34,
+  "size": 6530271,
+  "source": "measured level"
+ },
+ "alex-vlog|full|av1": {
+  "crf": 32,
+  "size": 9865036,
+  "source": "measured level"
+ }
+}

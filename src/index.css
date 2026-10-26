@@ -1,0 +1,740 @@
+@import 'tailwindcss';
+
+/* ───────────────────────── Design tokens ─────────────────────────
+   Built from the TIME LINE logo: sky #50B4E8 + white.
+   Ink and night are blue-black so the palette stays one family. */
+@theme {
+  --color-sky-25: #f7fbfe;
+  --color-sky-50: #eef8fd;
+  --color-sky-100: #ddf0fb;
+  --color-sky-200: #bce3f7;
+  --color-sky-300: #8fd0f1;
+  --color-sky-400: #6cc1ec;
+  --color-sky-500: #50b4e8;
+  --color-sky-600: #2f97d1;
+  --color-sky-700: #1f78ab;
+  --color-sky-800: #1b5f88;
+  --color-sky-900: #173f5a;
+  --color-sky-950: #0b2233;
+
+  --color-brand: #50b4e8;
+  --color-paper: #f6f9fb;
+  --color-cloud: #edf3f7;
+  --color-line: #dfe8ef;
+  --color-ink: #0a1824;
+  --color-ink-2: #2a3a48;
+  --color-muted: #5f7080;
+  --color-night: #06121d;
+  --color-night-2: #0c1d2b;
+
+  --font-sans: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --radius-card: 28px;
+  --radius-xl2: 22px;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --shadow-soft: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 1px 2px rgba(10, 24, 36, 0.04),
+    0 12px 32px -12px rgba(23, 63, 90, 0.18);
+  --shadow-lift: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 2px 6px rgba(10, 24, 36, 0.05),
+    0 30px 60px -24px rgba(23, 63, 90, 0.35);
+  --shadow-sky: 0 20px 50px -18px rgba(80, 180, 232, 0.65);
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+:root {
+  --frame: min(1320px, calc(100vw - 32px));
+  --gutter: max(16px, calc((100vw - var(--frame)) / 2));
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--color-paper);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@layer base {
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: 'ss01', 'cv11';
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--color-sky-500);
+  color: white;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+}
+
+/* ───────────────────────── Layout helpers ───────────────────────── */
+@utility frame {
+  width: var(--frame);
+  margin-inline: auto;
+}
+
+@utility mono-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@utility serif-accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+@utility display {
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+}
+
+@utility hairline {
+  border-color: var(--color-line);
+}
+
+@layer components {
+/* The page sits inside two faint vertical guide lines — the literal "time line". */
+.guides {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+}
+.guides::before,
+.guides::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(80, 180, 232, 0.22) 12%, rgba(80, 180, 232, 0.22) 88%, transparent);
+}
+.guides::before {
+  left: var(--gutter);
+}
+.guides::after {
+  right: var(--gutter);
+}
+@media (max-width: 767px) {
+  .guides {
+    display: none;
+  }
+}
+
+/* Static film grain over the whole page */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.04 0 0 0 0 0.09 0 0 0 0 0.14 0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Crosshair marks used at section corners */
+.cross {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+}
+.cross::before,
+.cross::after {
+  content: '';
+  position: absolute;
+  background: var(--color-sky-400);
+}
+.cross::before {
+  left: 5px;
+  top: 0;
+  width: 1px;
+  height: 11px;
+}
+.cross::after {
+  top: 5px;
+  left: 0;
+  height: 1px;
+  width: 11px;
+}
+
+}
+
+@layer components {
+/* ───────────────────────── Components ───────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 22px 0 24px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    background 0.4s var(--ease-expo),
+    color 0.4s var(--ease-expo),
+    box-shadow 0.4s var(--ease-expo),
+    transform 0.4s var(--ease-expo);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.pill-dark {
+  background: var(--color-ink);
+  color: white;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 10px 30px -10px rgba(10, 24, 36, 0.6);
+}
+.pill-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-sky-500);
+  transform: translateY(101%);
+  border-radius: 999px;
+  transition: transform 0.55s var(--ease-expo);
+}
+.pill-dark:hover::before {
+  transform: translateY(0);
+}
+.pill-light {
+  background: white;
+  color: var(--color-ink);
+  box-shadow:
+    0 0 0 1px var(--color-line) inset,
+    0 8px 24px -14px rgba(23, 63, 90, 0.35);
+}
+.pill-light:hover {
+  box-shadow:
+    0 0 0 1px var(--color-sky-300) inset,
+    0 12px 30px -14px rgba(80, 180, 232, 0.6);
+}
+.pill-sky {
+  background: var(--color-sky-500);
+  color: white;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    var(--shadow-sky);
+}
+.pill-sky:hover {
+  background: var(--color-sky-600);
+}
+.pill .pill-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-right: -10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  transition: transform 0.5s var(--ease-expo);
+}
+.pill-light .pill-icon {
+  background: var(--color-sky-50);
+  color: var(--color-sky-600);
+}
+.pill:hover .pill-icon {
+  transform: rotate(-45deg);
+}
+.pill-sm {
+  height: 40px;
+  padding: 0 16px 0 18px;
+  font-size: 14px;
+}
+.pill-sm .pill-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: -8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  background: white;
+  box-shadow: 0 0 0 1px var(--color-line) inset;
+  color: var(--color-ink-2);
+}
+.chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--color-sky-500);
+  box-shadow: 0 0 0 4px rgba(80, 180, 232, 0.2);
+  animation: pulse-dot 2s var(--ease-expo) infinite;
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(80, 180, 232, 0.45);
+  }
+  60% {
+    box-shadow: 0 0 0 7px rgba(80, 180, 232, 0);
+  }
+}
+
+.card {
+  background: white;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+}
+
+.dashed {
+  border: none;
+  height: 1px;
+  background-image: linear-gradient(to right, currentColor 50%, transparent 0%);
+  background-size: 8px 1px;
+  opacity: 0.25;
+}
+
+/* Phone-style frame for vertical reels */
+.reel {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--color-night-2);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 30px 60px -25px rgba(6, 18, 29, 0.55);
+  transform: translateZ(0);
+}
+.reel video,
+.reel img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.reel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+  pointer-events: none;
+}
+
+/* Section label "00:30 — WHY WE EXIST" */
+.timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.timestamp .tick {
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+/* Process timeline states (toggled by ScrollTrigger) */
+.step.is-done .step-node {
+  box-shadow:
+    0 0 0 2px var(--color-sky-500),
+    0 0 0 9px rgba(80, 180, 232, 0.16);
+}
+.step.is-done .step-node > span {
+  background: var(--color-sky-500);
+}
+.step.is-on .step-card {
+  box-shadow:
+    0 0 0 1px var(--color-sky-200),
+    var(--shadow-lift);
+}
+
+/* Text selection-safe gradient sky text */
+.sky-text {
+  background: linear-gradient(100deg, var(--color-sky-600), var(--color-sky-400) 55%, var(--color-sky-600));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+}
+
+/* Hide native cursor only where the custom cursor runs */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor,
+  html.has-cursor a,
+  html.has-cursor button {
+    cursor: none;
+  }
+}
+
+/* Reduced motion: keep layout, drop motion */
+html.motion-off *,
+html.motion-off *::before,
+html.motion-off *::after {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* React Bits overrides */
+.scroll-reveal {
+  margin: 0;
+}
+.scroll-reveal-text {
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+}
+.parallax {
+  overflow: hidden;
+}
+.scroller {
+  font-family: var(--font-sans);
+  filter: none;
+}
+#contact .curved-loop-jacket {
+  min-height: 0;
+  padding-block: 4vh 2vh;
+}
+
+/* ───────────────────────── Direction-aware pieces ───────────────────────── */
+.hero-veil {
+  background: linear-gradient(100deg, var(--color-paper) 10%, rgba(246, 249, 251, 0.92) 40%, rgba(246, 249, 251, 0.55) 62%, rgba(246, 249, 251, 0.2) 100%);
+}
+[dir='rtl'] .hero-veil {
+  background: linear-gradient(260deg, var(--color-paper) 10%, rgba(246, 249, 251, 0.92) 40%, rgba(246, 249, 251, 0.55) 62%, rgba(246, 249, 251, 0.2) 100%);
+}
+[dir='rtl'] .dir-flip {
+  transform: scaleX(-1);
+}
+[dir='rtl'] .pill:hover .pill-icon {
+  transform: rotate(45deg);
+}
+
+/* Process rail: at the inline-start edge on mobile, centred on desktop */
+.process-rail {
+  inset-inline-start: 19px;
+}
+.step-node {
+  inset-inline-start: 20px;
+  translate: -50% 0;
+}
+[dir='rtl'] .step-node {
+  translate: 50% 0;
+}
+@media (min-width: 768px) {
+  .process-rail {
+    inset-inline-start: 50%;
+    translate: -50% 0;
+  }
+  [dir='rtl'] .process-rail {
+    translate: 50% 0;
+  }
+  .step-node {
+    inset-inline-start: 50%;
+    translate: -50% -50%;
+  }
+  [dir='rtl'] .step-node {
+    translate: 50% -50%;
+  }
+}
+
+/* zat's wordmark is a script — echo it in every language */
+.case-script {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic;
+  font-weight: 400 !important;
+}
+
+/* ───────────────────────── Arabic ─────────────────────────
+   Alexandria (named after the agency's city) for UI & display, Amiri as the
+   calligraphic accent — the Arabic twin of Inter Tight + Instrument Serif. */
+html[lang='ar'] {
+  --font-sans: 'Alexandria', 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Amiri', 'Instrument Serif', ui-serif, serif;
+}
+html[lang='ar'] body {
+  font-feature-settings: normal;
+}
+/* tracking breaks Arabic letter joins */
+html[lang='ar'] :where(h1, h2, h3, h4, p, span, a, button, li, blockquote, figcaption, label, input, div) {
+  letter-spacing: 0 !important;
+}
+html[lang='ar'] .display {
+  line-height: 1.2;
+  font-weight: 600;
+}
+html[lang='ar'] .hero-title {
+  line-height: 1.22;
+}
+html[lang='ar'] .hero-title [data-hero-line='2'] {
+  line-height: 1.3 !important;
+}
+html[lang='ar'] .serif-accent {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.1em; /* Amiri runs optically smaller than Alexandria */
+}
+html[lang='ar'] .mono-label {
+  font-family: var(--font-sans);
+  text-transform: none;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+html[lang='ar'] .manifesto {
+  line-height: 1.5;
+}
+html[lang='ar'] .quote {
+  font-size: 27px;
+  line-height: 1.55;
+}
+html[lang='ar'] .logo-tagline {
+  letter-spacing: 0.42em !important;
+}
+
+
+/* Hero outcomes strip (React Bits TrueFocus) */
+.hero-focus .focus-container {
+  justify-content: flex-start;
+  gap: 0.15em 0.75em;
+}
+.hero-focus .focus-word {
+  font-size: clamp(21px, 1.9vw, 27px);
+  font-weight: inherit;
+  line-height: 1.25;
+  white-space: nowrap;
+  cursor: default;
+}
+.hero-focus .focus-word.active {
+  color: var(--color-sky-600);
+}
+html[lang='ar'] .hero-focus .focus-word {
+  font-size: clamp(20px, 1.75vw, 25px);
+  line-height: 1.5;
+}
+/* keep the hero clear of the ruler on shorter laptop screens */
+@media (min-width: 768px) and (max-height: 820px) {
+  .hero-proof {
+    display: none;
+  }
+}
+
+/* Seamless outline text (marquee): SVG filter instead of -webkit-text-stroke */
+.tl-outline {
+  filter: url(#tl-outline);
+}
+
+/* ───────────────────────── Hero layout ─────────────────────────
+   Phones: copy at the bottom, logo as a faint watermark.
+   Tablets (768–1023): 3D clock centred on top, copy underneath.
+   Laptops+: side by side; the headline scales with width *and* height so short
+   screens (1366×768, 1280×720) never push the copy into the ruler. */
+.hero-stage {
+  position: absolute;
+  inset-inline-end: -16vw;
+  top: 7svh;
+  width: 78vw;
+  height: 78vw;
+  max-height: 46svh;
+  opacity: 0.14;
+}
+.hero-copy {
+  justify-content: flex-end;
+  padding-top: 96px;
+  padding-bottom: calc(92px + 2svh);
+}
+.hero-title {
+  font-size: clamp(40px, 11.6vw, 64px);
+}
+.hero-sub {
+  font-size: 15.5px;
+}
+@media (max-width: 1023px) {
+  .hero-veil,
+  [dir='rtl'] .hero-veil {
+    background: linear-gradient(to top, var(--color-paper) 40%, rgba(246, 249, 251, 0.9) 62%, rgba(246, 249, 251, 0.35) 100%);
+  }
+}
+@media (min-width: 768px) {
+  .hero-stage {
+    inset-inline: 0;
+    margin-inline: auto;
+    top: 6svh;
+    width: min(80vw, 600px);
+    height: 34svh;
+    max-height: none;
+    opacity: 1;
+  }
+  .hero-copy {
+    padding-bottom: calc(100px + 2svh);
+  }
+  .hero-title {
+    font-size: clamp(48px, 7.2vw, 74px);
+  }
+  .hero-sub {
+    font-size: 17px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-stage {
+    inset-inline-start: auto;
+    inset-inline-end: -4vw;
+    margin: 0;
+    top: 0;
+    width: 56vw;
+    height: 100%;
+  }
+  .hero-copy {
+    justify-content: center;
+    padding-top: 104px;
+    padding-bottom: 128px;
+  }
+  .hero-title {
+    font-size: min(6vw, 11.5svh, 7.25rem);
+  }
+  .hero-sub {
+    font-size: 17.5px;
+  }
+}
+@media (min-width: 1600px) {
+  .hero-sub {
+    font-size: 19px;
+    max-width: 36rem;
+  }
+}
+/* Arabic: Alexandria is wider and needs taller lines */
+html[lang='ar'] .hero-title {
+  font-size: clamp(36px, 10.4vw, 58px);
+}
+@media (min-width: 768px) {
+  html[lang='ar'] .hero-title {
+    font-size: clamp(46px, 6.6vw, 68px);
+  }
+}
+@media (min-width: 1024px) {
+  html[lang='ar'] .hero-title {
+    font-size: min(5.3vw, 10.2svh, 6.5rem);
+  }
+}
+/* short screens: tighten rhythm, drop the proof row */
+@media (max-width: 767px) and (max-height: 760px) {
+  .hero-proof {
+    display: none;
+  }
+  .hero-badge {
+    margin-bottom: 14px;
+  }
+}
+@media (min-width: 1024px) and (max-height: 760px) {
+  .hero-badge {
+    margin-bottom: 14px;
+  }
+  .hero-sub,
+  .hero-focus {
+    margin-top: 14px;
+  }
+  .hero-ctas {
+    margin-top: 20px;
+  }
+}
+/* wide screens: give the layout room to breathe */
+@media (min-width: 1600px) {
+  :root {
+    --frame: min(1480px, calc(100vw - 120px));
+  }
+}
+@media (min-width: 2200px) {
+  :root {
+    --frame: min(1880px, calc(100vw - 240px));
+  }
+  .service-card {
+    width: 620px !important;
+    height: min(64svh, 740px) !important;
+  }
+}
+/* very wide screens: bigger type, keep the 3D clock from swallowing the screen */
+@media (min-width: 1800px) {
+  .hero-title {
+    font-size: min(5.6vw, 12svh, 9rem);
+  }
+  html[lang='ar'] .hero-title {
+    font-size: min(5vw, 11svh, 8rem);
+  }
+  .hero-sub {
+    font-size: 20px;
+    max-width: 38rem;
+  }
+  .hero-stage {
+    width: min(54vw, 1250px);
+    height: min(100%, 1200px);
+    /* centred with top (not translate) so HeroScene can read it from offsetTop */
+    top: max(0px, calc(50% - 600px));
+  }
+}
+
+/* showreel wall width per screen class (see Showreel.jsx fit()) */
+.reel-wall {
+  width: max(125vw, 560px);
+}
+@media (min-width: 768px) {
+  .reel-wall {
+    width: min(1560px, 118vw);
+  }
+}
+@media (min-width: 1600px) {
+  .reel-wall {
+    width: 104vw;
+  }
+}
+@media (max-width: 400px) {
+  .hero-badge .chip {
+    height: auto;
+    padding: 6px 12px;
+    font-size: 11.5px;
+  }
+}
