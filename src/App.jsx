@@ -6,7 +6,6 @@ import Preloader from './components/Preloader';
 import Cursor from './components/Cursor';
 import Nav from './components/Nav';
 import ChapterClock from './components/ChapterClock';
-import { MotionNotice } from './components/MotionNotice';
 import ClickSpark from './components/reactbits/ClickSpark';
 import Hero from './sections/Hero';
 import Manifesto from './sections/Manifesto';
@@ -40,7 +39,6 @@ export default function App() {
         <Cursor />
         <Nav ready={ready} />
         <ChapterClock ready={ready} />
-        <MotionNotice ready={ready} />
         <div className="guides" aria-hidden="true" />
         {/* static film grain: composited once, no per-frame blending */}
         <div className="grain" aria-hidden="true" />

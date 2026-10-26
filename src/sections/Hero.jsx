@@ -3,7 +3,6 @@ import { gsap, SplitText, useGSAP } from '../lib/gsap';
 import { NO_PREF_QUERY } from '../lib/prefs';
 import Silk from '../components/reactbits/Silk';
 import TrueFocus from '../components/reactbits/TrueFocus';
-import ShinyText from '../components/reactbits/ShinyText';
 import { LiveClock, Pill, PlayIcon, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
 import { Symbol } from '../components/Logo';
@@ -199,13 +198,6 @@ export default function Hero({ ready }) {
 
         {/* Copy */}
         <div className="hero-copy frame relative z-10 flex h-full flex-col">
-          <div data-hero-fade className="hero-badge mb-6">
-            <span className="chip !bg-white/80 backdrop-blur">
-              <span className="chip-dot" />
-              <ShinyText text={h.badge} color="#2a3a48" shineColor="#50B4E8" speed={3} direction={rtl ? 'right' : 'left'} />
-            </span>
-          </div>
-
           <h1 className="hero-title display max-w-[15ch] text-ink">
             <span data-hero-line="0" className="block">
               {h.lines[0]}

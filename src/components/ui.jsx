@@ -63,6 +63,23 @@ export function Timestamp({ time, label, tone = 'ink', className = '' }) {
   );
 }
 
+// iOS Low Power Mode (and some data savers) refuse autoplay until the visitor touches the page.
+// Refused videos are remembered and started on the next tap; the ones on screen keep playing.
+const refused = new Set();
+const onScreen = el => {
+  const r = el.getBoundingClientRect();
+  return r.bottom > -200 && r.top < window.innerHeight + 200;
+};
+function play(el) {
+  el.play?.()
+    .then(() => refused.delete(el))
+    .catch(() => refused.add(el));
+}
+if (typeof window !== 'undefined') {
+  const retry = () => refused.forEach(el => el.isConnected && el.src && onScreen(el) && play(el));
+  ['touchend', 'click', 'keydown'].forEach(type => window.addEventListener(type, retry, { passive: true }));
+}
+
 // Plays only while on screen — keeps a wall of reels cheap.
 export function Video({ src, poster, className = '', eager = false, ...rest }) {
   const ref = useRef(null);
@@ -71,11 +88,14 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
+    // React sets `muted` only as a property; iOS checks the attribute before it allows autoplay
+    el.muted = true;
+    el.setAttribute('muted', '');
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setLoad(true);
-          el.play?.().catch(() => {});
+          play(el);
         } else {
           el.pause?.();
         }
@@ -90,8 +110,7 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
   useEffect(() => {
     const el = ref.current;
     if (!el || !load || !src) return;
-    const r = el.getBoundingClientRect();
-    if (r.bottom > -200 && r.top < window.innerHeight + 200) el.play?.().catch(() => {});
+    if (onScreen(el)) play(el);
   }, [src, load]);
 
   return (

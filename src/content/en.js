@@ -18,11 +18,6 @@ const en = {
     scrollCue: 'Scroll to start the clock',
     watchReel: 'Watch the reel',
     service: 'Service',
-    motionOn: 'Motion on',
-    motionOff: 'Motion off',
-    motionNotice: 'Your device asks for reduced motion. This site is built around movement — keep it, or switch it off?',
-    motionKeep: 'Keep motion',
-    motionTurnOff: 'Turn it off',
     playShowreel: 'Play showreel'
   },
   nav: ['Work', 'Services', 'Process', 'Pricing', 'FAQ'],
@@ -41,7 +36,6 @@ const en = {
     zatWall: 'zat — Interior'
   },
   hero: {
-    badge: 'Now booking — 2 spots left this month',
     lines: ['Make every', 'second of your'],
     accent: 'brand count.',
     rotating: ['remembered', 'shared', 'craved', 'sold out', 'talked about'],

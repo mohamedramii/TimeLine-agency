@@ -4,7 +4,6 @@ import CurvedLoop from '../components/reactbits/CurvedLoop';
 import SplitText from '../components/reactbits/SplitText';
 import Threads from '../components/reactbits/Threads';
 import { Wordmark } from '../components/Logo';
-import { MotionToggle } from '../components/MotionNotice';
 import { LiveClock, Pill, Timestamp } from '../components/ui';
 import { brand, chapterTimes, navTargets } from '../content/shared';
 import { useScrollTo } from '../lib/smooth';
@@ -228,7 +227,6 @@ export default function Contact() {
               {c.hours}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <MotionToggle />
               <button
                 type="button"
                 onClick={() => switchLang(t.lang === 'ar' ? 'en' : 'ar')}

@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { gsap, useGSAP } from '../lib/gsap';
+import { gsap, ScrollTrigger, useGSAP } from '../lib/gsap';
 import { NO_PREF_QUERY } from '../lib/prefs';
 import SplitText from '../components/reactbits/SplitText';
 import { Pill, Timestamp, Video } from '../components/ui';
@@ -90,6 +90,15 @@ export default function Work() {
   useGSAP(
     () => {
       const cards = gsap.utils.toArray('[data-case]');
+      // A case taller than the screen (phones) sticks by its bottom edge instead, so it is seen
+      // whole before the next one slides over it.
+      const fitTops = () =>
+        cards.forEach((card, i) => {
+          const top = window.innerHeight * 0.11 + i * 18;
+          card.style.top = `${Math.min(top, window.innerHeight - card.offsetHeight - 16)}px`;
+        });
+      fitTops();
+      ScrollTrigger.addEventListener('refreshInit', fitTops);
       const mm = gsap.matchMedia();
       mm.add(NO_PREF_QUERY(), () => {
         cards.forEach((card, i) => {
@@ -111,7 +120,10 @@ export default function Work() {
           });
         });
       });
-      return () => mm.revert();
+      return () => {
+        ScrollTrigger.removeEventListener('refreshInit', fitTops);
+        mm.revert();
+      };
     },
     { scope: root }
   );
