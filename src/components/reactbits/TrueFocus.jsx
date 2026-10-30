@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { motionOff } from '../../lib/prefs';
+import { lite, motionOff } from '../../lib/prefs';
 import './TrueFocus.css';
 
 const CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
@@ -44,10 +44,21 @@ const TrueFocus = ({
     ? { type: 'spring', visualDuration: duration, bounce: 0.38 }
     : { duration, ease: SMOOTH_EASE };
 
+  // cycles only while on screen: off screen it kept re-rendering and re-measuring for nothing
+  const onScreen = useRef(true);
+  useEffect(() => {
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen.current = entry.isIntersecting;
+    });
+    io.observe(containerRef.current);
+    return () => io.disconnect();
+  }, []);
+
   useEffect(() => {
     if (manualMode || words.length < 2) return;
     const interval = setInterval(
       () => {
+        if (!onScreen.current) return;
         const roll = Math.random();
         setCurrentIndex(prev => {
           const current = prev % words.length;
@@ -151,10 +162,11 @@ const TrueFocus = ({
             }}
             className={`focus-word ${manualMode ? 'manual' : ''} ${isActive && !manualMode ? 'active' : ''}`}
             style={{
-              filter: `blur(${isActive ? 0 : blurAmount}px)`,
+              // blurAmount 0 leaves the filter out altogether: blurred text is costly on phones
+              filter: blurAmount ? `blur(${isActive ? 0 : blurAmount}px)` : undefined,
               opacity: isActive ? 1 : unfocusedOpacity,
               transform: focusScale !== 1 ? `scale(${isActive ? focusScale : 1})` : undefined,
-              transition: `filter ${duration}s ease, opacity ${duration}s ease, transform ${duration}s ${spring ? SPRING_CSS : SMOOTH_CSS}`
+              transition: `${blurAmount ? `filter ${duration}s ease, ` : ''}opacity ${duration}s ease, transform ${duration}s ${spring ? SPRING_CSS : SMOOTH_CSS}`
             }}
             onMouseEnter={() => {
               if (manualMode) setCurrentIndex(index);
@@ -185,15 +197,24 @@ const TrueFocus = ({
           )}
           {focusStyle !== 'box' &&
             focusStyle !== 'underline' &&
-            CORNERS.map(corner => (
-              <motion.span
-                key={corner}
-                className={`corner ${corner}`}
-                initial={{ ...corners[corner], opacity: 0 }}
-                animate={{ ...corners[corner], opacity: 1 }}
-                transition={transition}
-              />
-            ))}
+            CORNERS.map(corner =>
+              lite ? (
+                // phones: a CSS transition, so the hop runs on the compositor without any main-thread frames
+                <span
+                  key={corner}
+                  className={`corner ${corner}`}
+                  style={{ transform: `translate(${corners[corner].x}px, ${corners[corner].y}px)`, transition: `transform ${duration}s ${SPRING_CSS}` }}
+                />
+              ) : (
+                <motion.span
+                  key={corner}
+                  className={`corner ${corner}`}
+                  initial={{ ...corners[corner], opacity: 0 }}
+                  animate={{ ...corners[corner], opacity: 1 }}
+                  transition={transition}
+                />
+              )
+            )}
         </div>
       )}
     </div>

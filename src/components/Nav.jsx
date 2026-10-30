@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { LogoLockup } from './Logo';
 import { LiveClock, Pill } from './ui';
 import { navTargets } from '../content/shared';
@@ -28,18 +28,25 @@ function LangSwitch({ className = '' }) {
 export default function Nav({ ready }) {
   const t = useT();
   const rtl = useRtl();
-  const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [solid, setSolid] = useState(false);
   const [open, setOpen] = useState(false);
   const scrollTo = useScrollTo();
   const links = t.nav.map((label, i) => ({ label, href: navTargets[i] }));
 
-  useMotionValueEvent(scrollY, 'change', y => {
-    const prev = scrollY.getPrevious() ?? 0;
-    setHidden(y > prev && y > 400 && !open);
-    setSolid(y > 40);
-  });
+  // a plain scroll listener: only the position is needed, not a per-frame measure of the whole page
+  useEffect(() => {
+    let prev = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setSolid(y > 40);
+      if (Math.abs(y - prev) < 4) return;
+      setHidden(y > prev && y > 400 && !open);
+      prev = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [open]);
 
   useEffect(() => {
     document.documentElement.style.overflow = open ? 'hidden' : '';
@@ -64,7 +71,7 @@ export default function Nav({ ready }) {
       >
         <nav
           className={`frame flex h-[64px] items-center justify-between rounded-full ps-4 pe-2 transition-all duration-500 md:ps-6 ${
-            solid ? 'bg-white/75 shadow-[0_0_0_1px_rgba(223,232,239,0.9),0_18px_40px_-24px_rgba(23,63,90,0.35)] backdrop-blur-xl max-md:bg-white/95' : 'bg-transparent'
+            solid ? 'bg-white/75 shadow-[0_0_0_1px_rgba(223,232,239,0.9),0_18px_40px_-24px_rgba(23,63,90,0.35)] backdrop-blur-xl max-md:bg-white/95 max-md:shadow-[0_0_0_1px_rgba(223,232,239,0.9)]' : 'bg-transparent'
           }`}
           aria-label="Main"
         >

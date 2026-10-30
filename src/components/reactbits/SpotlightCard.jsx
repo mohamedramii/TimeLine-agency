@@ -47,7 +47,43 @@ const falloff = (color, softness) => {
   return list.join(', ');
 };
 
-const SpotlightCard = ({
+// Touch screens have no pointer to follow: same card, none of the spotlight's masked and blended layers or listeners.
+const PlainCard = ({
+  children,
+  className = '',
+  style,
+  theme = 'dark',
+  spotlightColor,
+  intensity,
+  spotlightSize,
+  softness,
+  shape,
+  borderGlow,
+  proximity,
+  smoothing,
+  ambient,
+  flare,
+  grain,
+  ...rest
+}) => {
+  const palette = THEMES[theme] ?? THEMES.dark;
+  return (
+    <div
+      className={`spotlight-card spotlight-card--plain${className ? ` ${className}` : ''}`}
+      style={{
+        '--spotlight-card-surface': palette.surface,
+        '--spotlight-card-border': palette.border,
+        '--spotlight-card-shadow': palette.shadow,
+        ...style
+      }}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+};
+
+const FullCard = ({
   children,
   className = '',
   style,
@@ -285,5 +321,7 @@ const SpotlightCard = ({
     </div>
   );
 };
+
+const SpotlightCard = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches ? PlainCard : FullCard;
 
 export default SpotlightCard;

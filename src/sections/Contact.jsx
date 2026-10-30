@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { gsap, useGSAP } from '../lib/gsap';
 import CurvedLoop from '../components/reactbits/CurvedLoop';
 import SplitText from '../components/reactbits/SplitText';
-import Threads from '../components/reactbits/Threads';
+import { Marquee } from '../components/Marquee';
 import { Wordmark } from '../components/Logo';
 import { LiveClock, Pill, Timestamp } from '../components/ui';
 import { brand, chapterTimes, navTargets } from '../content/shared';
 import { useScrollTo } from '../lib/smooth';
 import { lite, switchLang } from '../lib/prefs';
 import { useT } from '../i18n';
+
+const Threads = lazy(() => import('../components/reactbits/Threads'));
 
 function Field({ label, ...props }) {
   return (
@@ -78,10 +80,11 @@ export default function Contact() {
 
   useGSAP(
     () => {
-      gsap.from('[data-wordmark] .name-part', {
+      // letter by letter on big screens; phones slide the whole mark (moving SVG parts redraws the SVG each frame)
+      gsap.from(lite ? '[data-wordmark] svg' : '[data-wordmark] .name-part', {
         yPercent: 110,
-        duration: 1.6,
-        stagger: 0.06,
+        duration: lite ? 1 : 1.6,
+        stagger: lite ? 0 : 0.06,
         ease: 'expo.out',
         scrollTrigger: { trigger: '[data-wordmark]', start: 'top 95%' }
       });
@@ -92,22 +95,32 @@ export default function Contact() {
   return (
     <section id="contact" ref={root} className="relative overflow-hidden bg-night pt-10 text-white">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[70%] opacity-60">
-        {!lite && <Threads color={[0.31, 0.7, 0.91]} amplitude={1.2} distance={0.3} lineCount={40} speed={0.4} />}
+        {!lite && (
+          <Suspense fallback={null}>
+            <Threads color={[0.31, 0.7, 0.91]} amplitude={1.2} distance={0.3} lineCount={40} speed={0.4} />
+          </Suspense>
+        )}
       </div>
 
-      <div className="relative -mx-4 text-sky-500" dir={t.dir}>
-        <CurvedLoop
-          key={t.lang}
-          marqueeText={c.loop}
-          speed={1.2}
-          curveAmount={120}
-          fontSize={72}
-          fontWeight={500}
-          color="#50B4E8"
-          direction={t.dir === 'rtl' ? 'right' : 'left'}
-          interactive
-        />
-      </div>
+      {lite ? (
+        <Marquee speed={45} reverse={t.dir === 'rtl'} className="relative py-5 text-[2.5rem] font-medium leading-[1.4] text-sky-500">
+          <span className="whitespace-pre">{c.loop}</span>
+        </Marquee>
+      ) : (
+        <div className="relative -mx-4 text-sky-500" dir={t.dir}>
+          <CurvedLoop
+            key={t.lang}
+            marqueeText={c.loop}
+            speed={1.2}
+            curveAmount={120}
+            fontSize={72}
+            fontWeight={500}
+            color="#50B4E8"
+            direction={t.dir === 'rtl' ? 'right' : 'left'}
+            interactive
+          />
+        </div>
+      )}
 
       <div className="frame relative grid gap-16 pb-24 pt-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div>

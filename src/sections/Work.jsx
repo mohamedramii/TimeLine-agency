@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { gsap, ScrollTrigger, useGSAP } from '../lib/gsap';
-import { NO_PREF_QUERY } from '../lib/prefs';
+import { lite, NO_PREF_QUERY } from '../lib/prefs';
 import SplitText from '../components/reactbits/SplitText';
 import { Pill, Timestamp, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
@@ -22,7 +22,7 @@ function CaseCard({ c, look, i, total, open, t, media }) {
       className={`case-card sticky mb-[8vh] flex min-h-[78svh] origin-top flex-col overflow-hidden rounded-[34px] lg:flex-row ${TONE[look.tone]}`}
       style={{ top: `calc(11vh + ${i * 18}px)` }}
     >
-      <span data-case-dim className="pointer-events-none absolute inset-0 z-20 bg-[#0b2233] opacity-0" aria-hidden="true" />
+      <span data-case-dim className="pointer-events-none absolute inset-0 z-20 bg-[#0b2233] opacity-0 will-change-[opacity]" aria-hidden="true" />
       <div className="flex flex-1 flex-col p-7 md:p-12">
         <div className="flex items-center justify-between">
           <span className={`mono-label ${dark ? 'text-white/60' : 'text-muted'}`}>{c.type}</span>
@@ -59,7 +59,7 @@ function CaseCard({ c, look, i, total, open, t, media }) {
             type="button"
             onClick={() => open(r)}
             data-case-reel={k}
-            className={`reel relative w-[44%] max-w-[260px] ${k === 1 ? 'translate-y-10 rotate-[3deg]' : '-translate-y-6 -rotate-[2deg]'}`}
+            className={`reel relative w-[44%] max-w-[260px] ${k === 1 ? 'translate-y-10 md:rotate-[3deg]' : '-translate-y-6 md:-rotate-[2deg]'}`}
             data-cursor="play"
             aria-label={r.title}
           >
@@ -107,12 +107,13 @@ export default function Work() {
             // recede as the next case stacks on top. A tinted overlay, not a CSS filter: tweening
             // filter from 'none' starts at brightness(0) (black), and filtering video layers is costly.
             const recede = { trigger: next, start: 'top bottom', end: 'top 20%', scrub: true };
-            gsap.fromTo(card, { scale: 1 }, { scale: 0.93, ease: 'none', scrollTrigger: recede });
+            // the scale is desktop only: scaling a whole card re-rasterizes its text and shadow on every frame
+            if (!lite) gsap.fromTo(card, { scale: 1 }, { scale: 0.93, ease: 'none', scrollTrigger: recede });
             gsap.fromTo(card.querySelector('[data-case-dim]'), { opacity: 0 }, { opacity: 0.22, ease: 'none', scrollTrigger: recede });
           }
           gsap.from(card.querySelectorAll('[data-case-reel]'), {
             yPercent: 30,
-            rotate: k => (k ? 10 : -8),
+            rotate: k => (lite ? 0 : k ? 10 : -8),
             opacity: 0,
             duration: 1.4,
             stagger: 0.1,
@@ -129,12 +130,12 @@ export default function Work() {
   );
 
   return (
-    <section id="work" ref={root} className="relative bg-paper pb-[6vh] pt-32 md:pt-40">
+    <section id="work" ref={root} className="relative overflow-clip bg-paper pb-[6vh] pt-32 md:pt-40">
       <div className="frame flex flex-col justify-between gap-8 md:flex-row md:items-end">
         <div>
           <Timestamp time={chapterTimes[4]} label={t.chapters[4]} />
           <h2 className="display mt-5 text-[12vw] md:text-[6vw] xl:text-[5.6rem]">
-            <SplitText key={t.lang} text={cs.title} tag="span" textAlign="start" splitType={rtl ? 'words' : 'chars'} delay={25} className="!inline" />{' '}
+            <SplitText key={t.lang} text={cs.title} tag="span" textAlign="start" splitType={rtl || lite ? 'words' : 'chars'} delay={25} className="!inline" />{' '}
             <span className="serif-accent text-sky-500">{cs.accent}</span>
           </h2>
         </div>

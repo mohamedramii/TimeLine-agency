@@ -31,6 +31,7 @@ const SR_ONLY = {
 };
 
 const PIECE_STYLE = { display: 'inline-block', willChange: 'transform, filter, opacity' };
+const SETTLED_STYLE = { display: 'inline-block' };
 const WORD_STYLE = { display: 'inline-flex' };
 
 const blurTo = px => `blur(${Math.max(0, px)}px)`;
@@ -199,6 +200,7 @@ const BlurText = ({
   const [phase, setPhase] = useState(() => startPhase(trigger));
   const firstPhase = useRef(phase).current;
   const [focusWord, setFocusWord] = useState(-1);
+  const [settled, setSettled] = useState(false);
   const settledRef = useRef(phase === 'rest');
   const completeRef = useRef(onAnimationComplete);
   completeRef.current = onAnimationComplete;
@@ -282,6 +284,7 @@ const BlurText = ({
       settledRef.current = false;
       timer = window.setTimeout(() => {
         settledRef.current = true;
+        setSettled(true); // every word was its own layer for the reveal; let them go
         completeRef.current?.();
         if (loop) timer = window.setTimeout(() => setPhase('out'), Math.max(0, loopDelay) * 1000);
       }, inTotal);
@@ -320,7 +323,8 @@ const BlurText = ({
     phase === 'in' ? animateKeyframes : phase === 'out' ? exitSnapshot : phase === 'rest' ? restSnapshot : fromSnapshot;
   const tinted = Boolean(fromColor) && (phase === 'from' || phase === 'out');
   const dim = Math.min(6, Math.max(2, blur * 0.3));
-  const pieceStyle = fx.origin && !custom ? { ...PIECE_STYLE, ...fx.origin } : PIECE_STYLE;
+  const base = settled && !loop ? SETTLED_STYLE : PIECE_STYLE;
+  const pieceStyle = fx.origin && !custom ? { ...base, ...fx.origin } : base;
 
   const renderPiece = index => {
     const piece = pieces[index];

@@ -1,6 +1,6 @@
 'use client';
 
-import { motionOff, REDUCE_QUERY, NO_PREF_QUERY } from '../../lib/prefs';
+import { lite, motionOff, REDUCE_QUERY, NO_PREF_QUERY } from '../../lib/prefs';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -21,8 +21,11 @@ const fontsAreLoaded = () => typeof document !== 'undefined' && (!document.fonts
 
 const waveEase = t => 1 - Math.cos(t * Math.PI * 1.5) * Math.pow(1 - t, 1.2);
 
+// Phones don't reserve a layer per word ahead of time, and never blur text.
+const PROMOTE = lite ? {} : { willChange: 'transform, opacity' };
+
 const getEffect = (effect, em) => {
-  switch (effect) {
+  switch (lite && effect === 'blur' ? 'rise' : effect) {
     case 'fade':
       return { from: { opacity: 0 }, to: { opacity: 1 }, ease: 'power2.inOut' };
     case 'blur':
@@ -165,7 +168,7 @@ const SplitText = ({
         const tl = gsap.timeline(vars);
         tl.fromTo(
           pieces,
-          { ...fromVars, willChange: 'transform, opacity' },
+          { ...fromVars, ...PROMOTE },
           { ...toVars, duration, ease: easing, stagger: order, immediateRender: initial },
           0
         );
@@ -192,7 +195,7 @@ const SplitText = ({
         const tl = gsap.timeline();
         tl.fromTo(
           pieces,
-          { ...toVars, willChange: 'transform, opacity' },
+          { ...toVars, ...PROMOTE },
           { ...fromVars, duration: exit, ease: 'power2.in', stagger: order, immediateRender: false },
           0
         );

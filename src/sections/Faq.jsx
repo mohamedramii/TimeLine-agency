@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Pill, Timestamp } from '../components/ui';
 import { chapterTimes, egp, maxSaving } from '../content/shared';
+import { lite } from '../lib/prefs';
 import { useT } from '../i18n';
 
 function Item({ f, i, open, onToggle }) {
@@ -34,7 +35,7 @@ function Item({ f, i, open, onToggle }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: lite ? 0.3 : 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
             <p className="max-w-2xl pb-7 pe-4 ps-[60px] text-[16px] leading-relaxed text-muted md:ps-[68px]">{typeof f.a === 'function' ? f.a(egp(maxSaving())) : f.a}</p>

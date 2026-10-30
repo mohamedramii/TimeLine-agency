@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { gsap, stickyRunway, useGSAP } from '../lib/gsap';
+import { gsap, scrubbed, stickyRunway, useGSAP } from '../lib/gsap';
 import { lite, NO_PREF_QUERY, REDUCE_QUERY } from '../lib/prefs';
 import { Timestamp, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
@@ -27,7 +27,7 @@ export default function Showreel() {
   useGSAP(
     () => {
       const center = wall.current.querySelector(`[data-tile="${CENTER}"]`);
-      const zoom = () => Math.max(window.innerWidth / center.offsetWidth, window.innerHeight / center.offsetHeight) * 1.04;
+      const zoom = () => Math.max(window.innerWidth / center.offsetWidth, root.current.offsetHeight / center.offsetHeight) * 1.04;
       // whole wall on laptops; on wide screens fill the width and let top/bottom rows crop (an endless wall)
       const fit = () =>
         window.innerWidth >= 1600
@@ -35,16 +35,16 @@ export default function Showreel() {
           : Math.min(1, (window.innerHeight * 1.05) / wall.current.offsetHeight, (window.innerWidth * 1.02) / wall.current.offsetWidth);
 
       gsap.set(wall.current, { xPercent: -50, yPercent: -50, scale: zoom });
-      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * 2.4);
+      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * (lite ? 1.5 : 2.4));
 
       const mm = gsap.matchMedia();
       mm.add(NO_PREF_QUERY(), () => {
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: runway.current,
-            start: () => `top+=${sticky.lead()} top`,
-            end: 'bottom bottom',
-            scrub: 1,
+            start: sticky.start,
+            end: sticky.end,
+            scrub: scrubbed(1),
             invalidateOnRefresh: true,
             onUpdate: self => {
               if (!liveRef.current && self.progress > 0.08) {
@@ -66,13 +66,20 @@ export default function Showreel() {
           { y: 0, opacity: 1, stagger: 0.1, ease: 'power2.out', scrollTrigger: { trigger: runway.current, start: 'top 70%', end: 'top top', scrub: true } }
         );
         tl.fromTo(wall.current, { scale: zoom }, { scale: fit, ease: 'power2.inOut', duration: 0.62 }, 0.06)
-          .fromTo(center, { '--r': '0px' }, { '--r': '22px', ease: 'none', duration: 0.4 }, 0.1)
           .to('[data-reel-shade]', { opacity: 0, ease: 'none', duration: 0.3 }, 0.12)
-          .to('[data-reel-title]', { scale: 0.7, opacity: 0, ease: 'power1.in', duration: 0.38 }, 0.08)
-          .fromTo('[data-col="0"],[data-col="4"]', { yPercent: 6 }, { yPercent: -10, ease: 'none', duration: 1 }, 0)
-          .fromTo('[data-col="1"],[data-col="3"]', { yPercent: -12 }, { yPercent: 4, ease: 'none', duration: 1 }, 0)
-          .from('[data-reel-outro] > *', { y: 50, opacity: 0, stagger: 0.04, duration: 0.18, ease: 'power3.out' }, 0.68)
-          .to({}, { duration: 0.12 });
+          .to('[data-reel-title]', { ...(lite ? {} : { scale: 0.7 }), opacity: 0, ease: 'power1.in', duration: 0.38 }, 0.08);
+        if (lite) {
+          // phones keep the staggered columns but don't move them: the wall's own scale is the whole effect
+          gsap.set('[data-col="0"],[data-col="4"]', { yPercent: -10 });
+          gsap.set('[data-col="1"],[data-col="3"]', { yPercent: 4 });
+          // and the bottom fade joins only for the outro: a gradient over the zooming wall is costly to blend
+          tl.fromTo('[data-reel-fade]', { autoAlpha: 0 }, { autoAlpha: 1, ease: 'none', duration: 0.14 }, 0.56);
+        } else {
+          tl.fromTo(center, { '--r': '0px' }, { '--r': '22px', ease: 'none', duration: 0.4 }, 0.1)
+            .fromTo('[data-col="0"],[data-col="4"]', { yPercent: 6 }, { yPercent: -10, ease: 'none', duration: 1 }, 0)
+            .fromTo('[data-col="1"],[data-col="3"]', { yPercent: -12 }, { yPercent: 4, ease: 'none', duration: 1 }, 0);
+        }
+        tl.from('[data-reel-outro] > *', { y: 50, opacity: 0, stagger: 0.04, duration: 0.18, ease: 'power3.out' }, 0.68).to({}, { duration: 0.12 });
       });
       mm.add(REDUCE_QUERY(), () => {
         setLive(true);
@@ -89,8 +96,8 @@ export default function Showreel() {
 
   // The outer div is the scroll runway; the section stays put inside it (see stickyRunway).
   return (
-    <div id="showreel" ref={runway} className="relative">
-      <section ref={root} className="sticky top-0 h-[100svh] overflow-hidden bg-night text-white">
+    <div id="showreel" ref={runway} className="relative overflow-clip">
+      <section ref={root} className="sticky top-0 h-lvh overflow-hidden bg-night text-white">
         <div
           ref={wall}
           dir="ltr"
@@ -113,9 +120,9 @@ export default function Showreel() {
                     data-cursor="play"
                     aria-label={item.title}
                   >
-                    <Video src={isCenter ? item.loop : plays ? item.tile : undefined} poster={item.poster} eager={isCenter} />
+                    <Video src={isCenter ? item.loop : plays ? item.tile : undefined} poster={item.poster} eager={isCenter && !lite} />
                     {isCenter && (
-                      <span data-reel-shade className="absolute inset-0 bg-gradient-to-b from-night/40 via-night/10 to-night/60" />
+                      <span data-reel-shade className="absolute inset-0 bg-gradient-to-b will-change-[opacity] from-night/40 via-night/10 to-night/60" />
                     )}
                   </button>
                 );
@@ -124,10 +131,10 @@ export default function Showreel() {
           ))}
         </div>
 
-        <div data-reel-enter className="pointer-events-none absolute inset-0 bg-night" />
+        <div data-reel-enter className="pointer-events-none absolute inset-0 bg-night will-change-[opacity]" />
 
         {/* Title shown while we're "inside" the reel */}
-        <div data-reel-title className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+        <div data-reel-title className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center will-change-[opacity]">
           <Timestamp time={chapterTimes[2]} label={t.chapters[2]} tone="white" className="mb-6" />
           <h2 className="display text-[13vw] md:text-[8.5vw]">
             {sr.title[0]}
@@ -137,8 +144,9 @@ export default function Showreel() {
         </div>
 
         {/* Outro once the wall is revealed */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-night via-night/80 to-transparent pb-24 pt-40">
-          <div data-reel-outro className="frame flex flex-col justify-between gap-8 md:flex-row md:items-end">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 pb-24 pt-40 max-md:pb-[calc(100lvh-100svh+1.5rem)]">
+          <div data-reel-fade className="absolute inset-0 bg-gradient-to-t from-night via-night/80 to-transparent" />
+          <div data-reel-outro className="frame relative flex flex-col justify-between gap-8 md:flex-row md:items-end">
             <div className="max-w-md">
               <Timestamp time={chapterTimes[2]} label={sr.wallLabel} tone="white" />
               <p className="mt-4 text-lg text-white/75">{sr.caption}</p>

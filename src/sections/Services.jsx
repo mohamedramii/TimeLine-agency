@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
-import { gsap, stickyRunway, useGSAP } from '../lib/gsap';
-import { motionOff } from '../lib/prefs';
+import { useRef } from 'react';
+import { gsap, scrubbed, stickyRunway, useGSAP } from '../lib/gsap';
+import { lite, motionOff } from '../lib/prefs';
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import SplitText from '../components/reactbits/SplitText';
 import { Pill, Timestamp, Video } from '../components/ui';
@@ -152,7 +152,7 @@ export default function Services() {
   const root = useRef(null);
   const runway = useRef(null);
   const track = useRef(null);
-  const [index, setIndex] = useState(1);
+  const counter = useRef(null);
   const open = usePlayer();
   const t = useT();
   const rtl = useRtl();
@@ -166,24 +166,28 @@ export default function Services() {
       mm.add(motionOff() ? 'not all' : 'all', () => {
         const dir = rtl ? 1 : -1;
         const distance = () => track.current.scrollWidth - window.innerWidth;
-        const sticky = stickyRunway(runway.current, root.current, distance);
+        // phones: the cards travel a little faster than the finger, so the chapter never drags
+        const sticky = stickyRunway(runway.current, root.current, () => distance() * (lite ? 0.8 : 1));
+        const setBar = gsap.quickSetter(root.current.querySelector('[data-svc-progress]'), 'scaleX');
         const tween = gsap.to(track.current, {
           x: () => dir * distance(),
           ease: 'none',
           scrollTrigger: {
             trigger: runway.current,
-            start: () => `top+=${sticky.lead()} top`,
-            end: 'bottom bottom',
-            scrub: 1,
+            start: sticky.start,
+            end: sticky.end,
+            scrub: scrubbed(1),
             invalidateOnRefresh: true,
             onUpdate: self => {
-              setIndex(Math.min(total, Math.floor(self.progress * total) + 1));
-              gsap.set('[data-svc-progress]', { scaleX: self.progress });
+              // written straight to the DOM: a React state here re-rendered every card mid-scroll
+              const n = String(Math.min(total, Math.floor(self.progress * total) + 1)).padStart(2, '0');
+              if (counter.current.textContent !== n) counter.current.textContent = n;
+              setBar(self.progress);
             }
           }
         });
-        // each card leans in as it travels
-        gsap.utils.toArray('.service-card').forEach(card => {
+        // each card leans in as it travels (not on phones: rotating a whole card re-rasterizes it)
+        if (!lite) gsap.utils.toArray('.service-card').forEach(card => {
           gsap.fromTo(
             card,
             { rotate: 3 * -dir, y: 40 },
@@ -210,9 +214,9 @@ export default function Services() {
 
   // The outer div is the scroll runway; the section stays put inside it (see stickyRunway).
   return (
-    <div id="services" ref={runway} className="relative">
-      <section ref={root} className="sticky top-0 h-[100svh] overflow-hidden bg-paper">
-        <div className="flex h-full flex-col justify-center gap-5 pb-6 pt-16 md:gap-10 md:py-0">
+    <div id="services" ref={runway} className="relative overflow-clip">
+      <section ref={root} className="sticky top-0 h-lvh overflow-hidden bg-paper">
+        <div className="flex h-svh flex-col justify-center gap-5 pb-6 pt-16 md:gap-10 md:py-0">
           <div className="frame flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <Timestamp time={chapterTimes[3]} label={t.chapters[3]} />
@@ -224,7 +228,7 @@ export default function Services() {
             <div className="hidden items-end gap-6 md:flex">
               <p className="max-w-[18rem] text-[15px] text-muted">{sv.sub}</p>
               <span dir="ltr" className="display font-sans text-5xl tabular-nums text-ink">
-                {String(index).padStart(2, '0')}
+                <span ref={counter}>01</span>
                 <span className="text-line">/{String(total).padStart(2, '0')}</span>
               </span>
             </div>
@@ -232,7 +236,7 @@ export default function Services() {
 
           <div
             ref={track}
-            className="flex min-h-0 flex-1 gap-4 px-[var(--gutter)] md:flex-none md:gap-5"
+            className="flex min-h-0 flex-1 gap-4 px-[var(--gutter)] will-change-transform md:flex-none md:gap-5"
             data-cursor="drag"
           >
             {sv.items.map((s, i) => (

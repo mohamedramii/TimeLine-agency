@@ -18,6 +18,21 @@ import Pricing from './sections/Pricing';
 import Faq from './sections/Faq';
 import Contact from './sections/Contact';
 
+// Built once, outside App: when the loader hands over, only the hero and the nav need to re-render, not the page.
+const chapters = (
+  <>
+    <Manifesto />
+    <Showreel />
+    <Services />
+    <Work />
+    <Process />
+    <Results />
+    <Pricing />
+    <Faq />
+    <Contact />
+  </>
+);
+
 export default function App() {
   const [ready, setReady] = useState(false);
 
@@ -45,15 +60,7 @@ export default function App() {
         <ClickSpark sparkColor="#50B4E8" sparkSize={12} sparkRadius={26} sparkCount={9} duration={520}>
           <main>
             <Hero ready={ready} />
-            <Manifesto />
-            <Showreel />
-            <Services />
-            <Work />
-            <Process />
-            <Results />
-            <Pricing />
-            <Faq />
-            <Contact />
+            {chapters}
           </main>
         </ClickSpark>
       </VideoModalProvider>

@@ -8,6 +8,10 @@
   box-shadow: var(--spotlight-card-shadow);
 }
 
+.spotlight-card--plain {
+  box-shadow: var(--spotlight-card-shadow), inset 0 0 0 1px var(--spotlight-card-border);
+}
+
 .spotlight-card__light,
 .spotlight-card__grain,
 .spotlight-card__border,

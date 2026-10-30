@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { gsap, ScrollTrigger, useGSAP } from '../lib/gsap';
+import { gsap, ScrollTrigger, scrubbed, useGSAP } from '../lib/gsap';
 import { NO_PREF_QUERY } from '../lib/prefs';
 import SplitText from '../components/reactbits/SplitText';
 import { Timestamp } from '../components/ui';
@@ -20,24 +20,22 @@ export default function Process() {
       const steps = gsap.utils.toArray('[data-step]');
       const mm = gsap.matchMedia();
       mm.add(NO_PREF_QUERY(), () => {
-        gsap.fromTo(
-          '[data-line]',
-          { scaleY: 0 },
-          {
-            scaleY: 1,
-            ease: 'none',
+        // one timeline, transforms only: the tip used to animate `top`, a layout on every frame
+        gsap.set('[data-tip]', { xPercent: -50, yPercent: -50 });
+        gsap
+          .timeline({
+            defaults: { ease: 'none' },
             scrollTrigger: {
               trigger: rail.current,
               start: 'top 55%',
               end: 'bottom 55%',
-              scrub: 0.6,
-              onUpdate: self => {
-                gsap.set('[data-tip]', { top: `${self.progress * 100}%` });
-                gsap.set('[data-tip-hand]', { rotation: self.progress * 720, svgOrigin: '12 12' });
-              }
+              scrub: scrubbed(0.6),
+              invalidateOnRefresh: true
             }
-          }
-        );
+          })
+          .fromTo('[data-line]', { scaleY: 0 }, { scaleY: 1 }, 0)
+          .fromTo('[data-tip]', { y: 0 }, { y: () => rail.current.offsetHeight }, 0)
+          .fromTo('[data-tip-hand]', { rotation: 0 }, { rotation: 720, svgOrigin: '12 12' }, 0);
         steps.forEach((step, i) => {
           // first column sits at the inline-start edge; flip the slide-in for RTL
           const side = (i % 2 === 0 ? -1 : 1) * (rtl ? -1 : 1);
@@ -68,7 +66,7 @@ export default function Process() {
 
   return (
     <section id="process" ref={root} className="relative overflow-hidden bg-white py-32 md:py-44">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ backgroundImage: 'url(/brand/tile.svg)', backgroundSize: '160px' }} />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.035] max-md:hidden" style={{ backgroundImage: 'url(/brand/tile.svg)', backgroundSize: '160px' }} />
       <div className="frame relative text-center">
         <div className="flex justify-center">
           <Timestamp time={chapterTimes[5]} label={t.chapters[5]} />
@@ -83,8 +81,8 @@ export default function Process() {
       <div ref={rail} className="frame relative mt-24">
         {/* rail */}
         <div className="process-rail absolute bottom-0 top-0 w-[2px] rounded bg-line">
-          <div data-line className="h-full w-full origin-top rounded bg-sky-500" />
-          <div data-tip className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+          <div data-line className="h-full w-full origin-top rounded bg-sky-500 will-change-transform" />
+          <div data-tip className="absolute left-1/2 top-0 will-change-transform">
             <div className="grid h-11 w-11 place-items-center rounded-full bg-white shadow-[0_0_0_1px_var(--color-line),var(--shadow-sky)]">
               <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" fill="none" stroke="var(--color-sky-500)" strokeWidth="1.5" />

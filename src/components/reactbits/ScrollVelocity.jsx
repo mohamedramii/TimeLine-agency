@@ -1,7 +1,7 @@
 'use client';
 
 import { motionOff, REDUCE_QUERY, NO_PREF_QUERY } from '../../lib/prefs';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   motion,
   useAnimationFrame,
@@ -106,13 +106,24 @@ function VelocityText({
     return `${wrap(-copyWidth, 0, v)}px`;
   });
 
+  // runs only while on screen: off screen this loop kept the whole page repainting
+  const box = useRef(null);
+  const onScreen = useRef(true);
+  useEffect(() => {
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen.current = entry.isIntersecting;
+    });
+    io.observe(box.current);
+    return () => io.disconnect();
+  }, []);
+
   const directionFactor = useRef(1);
   const pace = useRef(1);
   const fling = useRef(0);
   const drag = useRef({ active: false, pointerId: -1, lastX: 0, lastTime: 0, velocity: 0, travel: 0 });
 
   useAnimationFrame((t, delta) => {
-    if (reduceMotion) return;
+    if (reduceMotion || !onScreen.current) return;
 
     const grab = drag.current;
     const seconds = Math.min(delta, 64) / 1000;
@@ -232,6 +243,7 @@ function VelocityText({
 
   return (
     <div
+      ref={box}
       className={parallaxClassName}
       style={{
         ...(draggable ? { cursor: 'grab', userSelect: 'none', WebkitUserSelect: 'none', touchAction: 'pan-y' } : {}),

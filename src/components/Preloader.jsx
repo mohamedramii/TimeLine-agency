@@ -81,19 +81,20 @@ export default function Preloader({ onDone }) {
       // Ring, hand, counter and bar follow the slower of: the minimum sweep time, or the videos loading.
       let loaded = 0;
       preloadVideos(PRELOAD, f => (loaded = f));
-      const sweep = gsap.parseEase('power2.inOut');
+      const ramp = gsap.parseEase('power2.inOut');
       const start = performance.now();
-      gsap.set('[data-ring]', { drawSVG: '0%' });
-      gsap.set('[data-bar]', { scaleX: 0 });
-      gsap.set('[data-hand]', { transformOrigin: '50% 50%' });
+      // one paused timeline scrubbed by the progress: setting these one by one each frame re-measured the ring
+      const sweep = gsap
+        .timeline({ paused: true, defaults: { ease: 'none', duration: 1 } })
+        .fromTo('[data-ring]', { drawSVG: '0%' }, { drawSVG: '100%' }, 0)
+        .fromTo('[data-hand]', { rotate: 0 }, { rotate: 360, transformOrigin: '50% 50%' }, 0)
+        .fromTo('[data-bar]', { scaleX: 0 }, { scaleX: 1 }, 0);
       const tick = () => {
         const t = (performance.now() - start) / 1000;
-        const target = Math.min(sweep(Math.min(1, (t * speed) / MIN_TIME)), t > MAX_WAIT ? 1 : loaded);
+        const target = Math.min(ramp(Math.min(1, (t * speed) / MIN_TIME)), t > MAX_WAIT ? 1 : loaded);
         count.v += (target - count.v) * 0.12;
         if (target === 1 && count.v > 0.997) count.v = 1;
-        gsap.set('[data-ring]', { drawSVG: `${count.v * 100}%` });
-        gsap.set('[data-hand]', { rotate: count.v * 360 });
-        gsap.set('[data-bar]', { scaleX: count.v });
+        sweep.progress(count.v);
         counter.textContent = String(Math.round(count.v * 100)).padStart(3, '0');
         if (count.v === 1) {
           gsap.ticker.remove(tick);

@@ -56,6 +56,14 @@ so files are as small as possible with no visible loss. Results are logged to `s
 - `name.webp` — posters; photos are WebP too. Brand SVGs are run through SVGO.
 - The 3D hero is plain Three.js (no React-Three-Fiber/drei) and only loads on tablets/desktops.
 
+## Phones
+
+Phones (`lite` in `src/lib/prefs.js`, under 768 px) run a lighter build of the same story, because Safari redraws at 3× density:
+
+- Nothing animates off screen, and the page truly rests when idle (ScrollTrigger's keep-alive loop is removed at build time for everything but Firefox, see `vite.config.js`).
+- Static gradients instead of WebGL backgrounds (those chunks are not even downloaded), hairlines instead of large blurred shadows, no CSS/SVG filters.
+- Marquees run on the compositor (`src/components/Marquee.jsx`), and held sections use CSS sticky (`stickyRunway` in `src/lib/gsap.js`).
+
 ## Visitor preferences
 
 - Language: header button (عربي / EN) or `?lang=en` / `?lang=ar`.

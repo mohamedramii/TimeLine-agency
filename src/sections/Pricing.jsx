@@ -1,14 +1,15 @@
-import { useRef } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 import { gsap, useGSAP } from '../lib/gsap';
 import { lite, NO_PREF_QUERY } from '../lib/prefs';
 import { useScrollTo } from '../lib/smooth';
-import Iridescence from '../components/reactbits/Iridescence';
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import StarBorder from '../components/reactbits/StarBorder';
 import { Symbol } from '../components/Logo';
 import { Pill, Timestamp } from '../components/ui';
 import { aLaCarte, brand, chapterTimes, egp, packages, prices } from '../content/shared';
 import { useT } from '../i18n';
+
+const Iridescence = lazy(() => import('../components/reactbits/Iridescence'));
 
 const Check = ({ dark }) => (
   <svg width="17" height="17" viewBox="0 0 16 16" className={`mt-0.5 shrink-0 ${dark ? 'text-sky-400' : 'text-sky-500'}`} aria-hidden="true">
@@ -45,7 +46,8 @@ function PackageCard({ pkg, pr, pick }) {
         '--spotlight-card-border': dark ? 'rgba(80,180,232,0.35)' : 'var(--color-line)'
       }}
     >
-      {dark && <div className="pointer-events-none absolute -end-20 -top-24 h-64 w-64 rounded-full bg-sky-500/30 blur-3xl" />}
+      {/* a gradient, not filter: blur() — a blur stays expensive on phones for as long as it is on screen */}
+      {dark && <div className="pointer-events-none absolute -end-36 -top-40 h-96 w-96 bg-[radial-gradient(closest-side,rgba(80,180,232,0.34),rgba(80,180,232,0.12)_55%,transparent)]" />}
       <div className="relative flex flex-1 flex-col p-7 md:p-8">
         <div className="flex items-center justify-between gap-3">
           <p className="text-2xl font-medium tracking-tight">{name}</p>
@@ -87,7 +89,11 @@ function PackageCard({ pkg, pr, pick }) {
         </ul>
 
         <div className="mt-auto pt-8">
-          {dark ? (
+          {dark && lite ? (
+            <Pill variant="sky" className="w-full justify-center" onClick={() => pick(label)}>
+              {pr.choose}
+            </Pill>
+          ) : dark ? (
             <StarBorder
               as="button"
               type="button"
@@ -206,7 +212,9 @@ export default function Pricing() {
               {lite ? (
                 <div className="h-full w-full bg-[linear-gradient(135deg,#7cc8ef_0%,#50b4e8_45%,#2f93cc_100%)]" />
               ) : (
-                <Iridescence color={[0.31, 0.7, 0.91]} speed={0.6} amplitude={0.12} mouseReact resolution={0.6} />
+                <Suspense fallback={null}>
+                  <Iridescence color={[0.31, 0.7, 0.91]} speed={0.6} amplitude={0.12} mouseReact resolution={0.6} />
+                </Suspense>
               )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-b from-sky-700/25 via-sky-600/10 to-sky-950/60" />

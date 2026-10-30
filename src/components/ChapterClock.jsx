@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from 'motion/react';
 import { ScrollTrigger, useGSAP } from '../lib/gsap';
 import { chapterIds, chapterTimes } from '../content/shared';
@@ -7,8 +7,20 @@ import { useT } from '../i18n';
 const R = 17;
 const CIRC = 2 * Math.PI * R;
 
-// Fixed HUD: a tiny clock whose hand is the page's scroll progress, plus the current chapter.
+// Laptops and up only: smaller screens hide it, so they shouldn't pay for its per-scroll work at all.
 export default function ChapterClock({ ready }) {
+  const [wide, setWide] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)');
+    const change = () => setWide(query.matches);
+    query.addEventListener('change', change);
+    return () => query.removeEventListener('change', change);
+  }, []);
+  return wide ? <Hud ready={ready} /> : null;
+}
+
+// Fixed HUD: a tiny clock whose hand is the page's scroll progress, plus the current chapter.
+function Hud({ ready }) {
   const t = useT();
   const [active, setActive] = useState(0);
   const [away, setAway] = useState(false);

@@ -4,6 +4,7 @@ import { useScrollTo } from '../lib/smooth';
 import { brand } from '../content/shared';
 import { videoUrl } from '../lib/video';
 import { cachedUrl } from '../lib/preload';
+import { lite } from '../lib/prefs';
 
 export const ArrowIcon = ({ className = '' }) => (
   <svg viewBox="0 0 16 16" className={`dir-flip ${className}`} width="14" height="14" fill="none" aria-hidden="true">
@@ -43,7 +44,7 @@ export function Pill({ children, href, onClick, variant = 'dark', size, icon = '
       {inner}
     </button>
   );
-  if (!magnetic) return el;
+  if (!magnetic || lite) return el;
   return (
     <Magnet padding={60} magnetStrength={4} wrapperClassName="inline-block">
       {el}
@@ -71,10 +72,26 @@ const onScreen = el => {
   const r = el.getBoundingClientRect();
   return r.bottom > -200 && r.top < window.innerHeight + 200;
 };
+// Starting several videos in the same frame is a visible hitch on phones: they start one at a time.
+const startQueue = new Set();
+let startTimer = 0;
+function nextStart() {
+  startTimer = 0;
+  const el = startQueue.values().next().value;
+  if (!el) return;
+  startQueue.delete(el);
+  if (el.isConnected && onScreen(el)) {
+    el.play?.()
+      .then(() => refused.delete(el))
+      .catch(() => refused.add(el));
+    startTimer = setTimeout(nextStart, 90);
+  } else {
+    nextStart();
+  }
+}
 function play(el) {
-  el.play?.()
-    .then(() => refused.delete(el))
-    .catch(() => refused.add(el));
+  startQueue.add(el);
+  if (!startTimer) nextStart();
 }
 if (typeof window !== 'undefined') {
   // a tap unlocks every refused video, so ones scrolled to later can start on their own;
@@ -110,6 +127,7 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
           setLoad(true);
           play(el);
         } else {
+          startQueue.delete(el);
           el.pause?.();
         }
       },
@@ -148,25 +166,42 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
   );
 }
 
-// Live local time for the agency's city — "time" is the brand.
+// Live local time for the agency's city — "time" is the brand. Ticks only while it is on screen,
+// and writes straight to the DOM so a second never costs a React render.
+const clockText = (() => {
+  const make = seconds =>
+    new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: seconds ? '2-digit' : undefined, hour12: false, timeZone: brand.timezone });
+  const short = make(false);
+  const long = make(true);
+  return seconds => (seconds ? long : short).format(new Date());
+})();
+
 export function LiveClock({ className = '', seconds = false }) {
-  const fmt = () =>
-    new Intl.DateTimeFormat('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: seconds ? '2-digit' : undefined,
-      hour12: false,
-      timeZone: brand.timezone
-    }).format(new Date());
-  const [now, setNow] = useState(fmt);
+  const ref = useRef(null);
   useEffect(() => {
-    const id = setInterval(() => setNow(fmt()), 1000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const el = ref.current;
+    let id = 0;
+    const tick = () => {
+      const now = clockText(seconds);
+      if (el.textContent !== now) el.textContent = now;
+    };
+    const io = new IntersectionObserver(([entry]) => {
+      clearInterval(id);
+      id = 0;
+      if (entry.isIntersecting) {
+        tick();
+        id = setInterval(tick, 1000);
+      }
+    });
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      clearInterval(id);
+    };
+  }, [seconds]);
   return (
-    <span dir="ltr" className={`font-mono tabular-nums ${className}`}>
-      {now}
+    <span ref={ref} dir="ltr" className={`font-mono tabular-nums ${className}`}>
+      {clockText(seconds)}
     </span>
   );
 }

@@ -1,7 +1,6 @@
 import { lazy, Suspense, useRef, useState } from 'react';
-import { gsap, SplitText, stickyRunway, useGSAP } from '../lib/gsap';
+import { gsap, scrubbed, SplitText, stickyRunway, useGSAP } from '../lib/gsap';
 import { lite, NO_PREF_QUERY } from '../lib/prefs';
-import Silk from '../components/reactbits/Silk';
 import TrueFocus from '../components/reactbits/TrueFocus';
 import { LiveClock, Pill, PlayIcon, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
@@ -9,6 +8,7 @@ import { Symbol } from '../components/Logo';
 import { useMedia, useRtl, useT } from '../i18n';
 
 const HeroScene = lazy(() => import('../three/HeroScene'));
+const Silk = lazy(() => import('../components/reactbits/Silk'));
 
 const Stars = () => (
   <span className="flex gap-0.5 text-sky-500" aria-label="5/5">
@@ -23,7 +23,7 @@ const Stars = () => (
 function Ruler() {
   const ticks = Array.from({ length: 121 });
   return (
-    <div dir="ltr" className="ruler flex items-end gap-[9px] whitespace-nowrap will-change-transform max-md:hidden">
+    <div dir="ltr" className="ruler flex items-end gap-[9px] whitespace-nowrap will-change-transform">
       {ticks.map((_, i) => {
         const major = i % 10 === 0;
         return (
@@ -53,6 +53,7 @@ export default function Hero({ ready }) {
   // WebGL clock on tablets/desktops; phones get a light SVG watermark instead
   const [desktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches);
   const phone = !desktop;
+  const [wide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
   const h = t.hero;
   const s = rtl ? -1 : 1; // horizontal direction
 
@@ -74,10 +75,14 @@ export default function Hero({ ready }) {
       )
         // drop the line masks once the words land — they would clip Arabic dots and diacritics
         .call(() => splits.forEach(sp => sp.revert()), null, '>')
-        .from('[data-hero-fade]', { y: 26, opacity: 0, duration: 1.2, stagger: 0.08 }, 0.45)
-        .from('[data-hero-card]', { y: 80, opacity: 0, duration: 1.6, stagger: 0.12 }, 0.5)
-        .from('[data-hero-3d]', { scale: 0.7, opacity: 0, duration: 2, transformOrigin: stageCenter }, 0.2)
-        .from('.ruler', { xPercent: -10, opacity: 0, duration: 2 }, 0.6);
+        .from('[data-hero-fade]', { y: 26, opacity: 0, duration: 1.2, stagger: 0.08 }, 0.45);
+      if (lite) {
+        tl.from('[data-hero-3d]', { opacity: 0, duration: 1.4 }, 0.2);
+      } else {
+        tl.from('[data-hero-card]', { y: 80, opacity: 0, duration: 1.6, stagger: 0.12 }, 0.5)
+          .from('[data-hero-3d]', { scale: 0.7, opacity: 0, duration: 2, transformOrigin: stageCenter }, 0.2)
+          .from('.ruler', { xPercent: -10, opacity: 0, duration: 2 }, 0.6);
+      }
       return () => splits.forEach(sp => sp.revert());
     },
     { scope: root, dependencies: [ready] }
@@ -86,15 +91,15 @@ export default function Hero({ ready }) {
   // Scroll — the headline parts horizontally, the camera dives into the clock and night falls.
   useGSAP(
     () => {
-      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * 1.3);
+      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * (lite ? 0.85 : 1.3));
       const mm = gsap.matchMedia();
       mm.add(NO_PREF_QUERY(), () => {
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: runway.current,
-            start: () => `top+=${sticky.lead()} top`,
-            end: 'bottom bottom',
-            scrub: 0.8,
+            start: sticky.start,
+            end: sticky.end,
+            scrub: scrubbed(0.8),
             onUpdate: self => (progress.current = self.progress)
           }
         });
@@ -102,11 +107,13 @@ export default function Hero({ ready }) {
           .to('[data-hero-line="1"]', { xPercent: 14 * s, opacity: 0, ease: 'none' }, 0)
           .to('[data-hero-line="2"]', { xPercent: -10 * s, opacity: 0, ease: 'none' }, 0)
           .to('[data-hero-fade]', { y: -60, opacity: 0, stagger: 0.02, ease: 'none' }, 0)
-          .to('[data-hero-card="a"]', { x: `${28 * s}vw`, y: '-30vh', rotate: 22 * s, ease: 'none' }, 0)
-          .to('[data-hero-card="b"]', { x: `${20 * s}vw`, y: '30vh', rotate: -18 * s, ease: 'none' }, 0)
-          .to('.ruler', { xPercent: -30, ease: 'none' }, 0)
-          .to('[data-silk]', { scale: 1.25, ease: 'none' }, 0)
           .to('[data-night]', { opacity: 1, ease: 'power1.in' }, 0.55);
+        if (!lite) {
+          tl.to('[data-hero-card="a"]', { x: `${28 * s}vw`, y: '-30vh', rotate: 22 * s, ease: 'none' }, 0)
+            .to('[data-hero-card="b"]', { x: `${20 * s}vw`, y: '30vh', rotate: -18 * s, ease: 'none' }, 0)
+            .to('.ruler', { xPercent: -30, ease: 'none' }, 0)
+            .to('[data-silk]', { scale: 1.25, ease: 'none' }, 0);
+        }
       });
       return () => {
         sticky.kill();
@@ -118,13 +125,15 @@ export default function Hero({ ready }) {
 
   // The outer div is the scroll runway; the section stays put inside it (see stickyRunway).
   return (
-    <div id="top" ref={runway} className="relative">
-      <section ref={root} className="sticky top-0 h-[100svh] min-h-[680px] overflow-hidden bg-paper">
-        {/* Sky silk */}
-        <div data-silk className="absolute inset-0 ltr:origin-right rtl:origin-left">
-          {lite ? (
-            <div className="h-full w-full bg-[radial-gradient(120%_70%_at_85%_15%,#bfe6fa_0%,#7cc8ef_38%,#56b7e9_70%)]" />
-          ) : (
+    <div id="top" ref={runway} className="relative overflow-clip">
+      <section ref={root} className="sticky top-0 h-lvh min-h-[680px] overflow-hidden bg-paper">
+        {/* Sky silk (phones: one painted gradient, see .hero-lite-bg) */}
+        {lite ? (
+          <div className="hero-lite-bg absolute inset-0" />
+        ) : (
+          <>
+            <div data-silk className="absolute inset-0 ltr:origin-right rtl:origin-left">
+          <Suspense fallback={null}>
           <Silk
             lightMode
             color="#56b7e9"
@@ -139,11 +148,13 @@ export default function Hero({ ready }) {
             intro={false}
             dpr={0.75}
           />
-          )}
-        </div>
-        <div className="hero-veil pointer-events-none absolute inset-0" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-paper to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-paper/80 to-transparent" />
+          </Suspense>
+            </div>
+            <div className="hero-veil pointer-events-none absolute inset-0" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-paper to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-paper/80 to-transparent" />
+          </>
+        )}
 
         {/* 3D clock: the canvas covers the whole hero so the camera dive has no edge to hit;
             .hero-stage only marks where the clock sits (and holds the SVG watermark on phones) */}
@@ -157,6 +168,8 @@ export default function Hero({ ready }) {
         </div>
 
         {/* Floating proof cards */}
+        {!lite && (
+          <>
         <button
           type="button"
           data-hero-card="a"
@@ -165,7 +178,7 @@ export default function Hero({ ready }) {
           data-cursor="play"
           aria-label={t.ui.playShowreel}
         >
-          <Video src={media.zatFinal.loop} poster={media.zatFinal.poster} eager />
+          <Video src={media.zatFinal.loop} poster={media.zatFinal.poster} eager={wide} />
           <span className="absolute inset-x-2 bottom-2 flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-medium text-ink backdrop-blur">
             <span className="grid h-5 w-5 place-items-center rounded-full bg-sky-500 text-white">
               <PlayIcon className="h-2.5 w-2.5" />
@@ -204,26 +217,31 @@ export default function Hero({ ready }) {
           <p className="mt-1 text-[12px] text-muted">{h.card.note}</p>
         </div>
 
+          </>
+        )}
+
+        {/* Everything readable stays inside the small viewport, so Safari's open toolbar never covers it */}
+        <div className="absolute inset-x-0 top-0 z-10 h-svh min-h-[680px]">
         {/* Copy */}
-        <div className="hero-copy frame relative z-10 flex h-full flex-col">
+        <div className="hero-copy frame relative flex h-full flex-col">
           <h1 className="hero-title display max-w-[15ch] text-ink">
-            <span data-hero-line="0" className="block">
+            <span data-hero-line="0" className="block max-md:will-change-transform">
               {h.lines[0]}
             </span>
-            <span data-hero-line="1" className="block">
+            <span data-hero-line="1" className="block max-md:will-change-transform">
               {h.lines[1]}
             </span>
-            <span data-hero-line="2" className="serif-accent block text-sky-500 [font-size:1.08em] [line-height:0.9]">
+            <span data-hero-line="2" className="serif-accent block text-sky-500 [font-size:1.08em] [line-height:0.9] max-md:will-change-transform">
               {h.accent}
             </span>
           </h1>
 
-          <p data-hero-fade className="hero-sub mt-5 max-w-[33rem] leading-relaxed text-ink-2">
+          <p data-hero-fade className="hero-sub mt-5 max-w-[33rem] leading-relaxed text-ink-2 max-md:will-change-transform">
             {h.sub}
           </p>
 
           {/* outcomes on their own line: TrueFocus brackets hop between them, the rest stay blurred */}
-          <div data-hero-fade className="hero-focus mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div data-hero-fade className="hero-focus mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 max-md:will-change-transform">
             <span className="mono-label flex items-center gap-2 text-sky-600">
               <span className="h-px w-6 bg-sky-500" />
               {h.focusLabel}
@@ -237,9 +255,9 @@ export default function Hero({ ready }) {
                 easing="spring"
                 borderColor="#50B4E8"
                 glowColor="rgba(80, 180, 232, 0.55)"
-                blurAmount={2.5}
+                blurAmount={lite ? 0 : 2.5}
                 unfocusedOpacity={0.4}
-                focusScale={1.04}
+                focusScale={lite ? 1 : 1.04}
                 cornerSize={12}
                 borderWidth={2}
                 animationDuration={0.6}
@@ -248,7 +266,7 @@ export default function Hero({ ready }) {
             </div>
           </div>
 
-          <div data-hero-fade className="hero-ctas mt-7 flex flex-wrap items-center gap-3">
+          <div data-hero-fade className="hero-ctas mt-7 flex flex-wrap items-center gap-3 max-md:will-change-transform">
             <Pill href="#contact" magnetic>
               {h.primary}
             </Pill>
@@ -257,7 +275,7 @@ export default function Hero({ ready }) {
             </Pill>
           </div>
 
-          <div data-hero-fade className="hero-proof mt-7 flex items-center gap-4">
+          <div data-hero-fade className="hero-proof mt-7 flex items-center gap-4 max-md:will-change-transform">
             <div dir="ltr" className="flex -space-x-2.5">
               {['z', 'M', 'S', '+'].map((l, i) => (
                 <span
@@ -278,7 +296,7 @@ export default function Hero({ ready }) {
         </div>
 
         {/* Bottom ruler */}
-        <div className="absolute inset-x-0 bottom-0 z-10 overflow-hidden pb-5 pt-8">
+        <div className="absolute inset-x-0 bottom-0 overflow-hidden pb-5 pt-8">
           <div className="frame mb-8 flex items-center justify-center md:justify-between">
             <span className="hidden w-[220px] md:block" />
             <span className="mono-label text-muted">{t.ui.scrollCue}</span>
@@ -286,11 +304,12 @@ export default function Hero({ ready }) {
               {t.city} · <LiveClock seconds className="text-ink" />
             </span>
           </div>
-          <Ruler />
+          {!lite && <Ruler />}
+        </div>
         </div>
 
         {/* Night falls */}
-        <div data-night className="pointer-events-none absolute inset-0 z-20 bg-night opacity-0" />
+        <div data-night className="pointer-events-none absolute inset-0 z-20 bg-night opacity-0 will-change-[opacity]" />
       </section>
     </div>
   );

@@ -1,10 +1,11 @@
-import { useRef } from 'react';
-import { gsap, SplitText, stickyRunway, useGSAP } from '../lib/gsap';
+import { lazy, Suspense, useRef } from 'react';
+import { gsap, scrubbed, SplitText, stickyRunway, useGSAP } from '../lib/gsap';
 import { lite, NO_PREF_QUERY } from '../lib/prefs';
-import LightRays from '../components/reactbits/LightRays';
 import { Cross, Timestamp } from '../components/ui';
 import { chapterTimes } from '../content/shared';
 import { useRtl, useT } from '../i18n';
+
+const LightRays = lazy(() => import('../components/reactbits/LightRays'));
 
 // Pinned chapter: the page holds still while the manifesto lights up word by word,
 // so the reader actually gets to read it before the showreel takes over.
@@ -16,26 +17,27 @@ export default function Manifesto() {
 
   useGSAP(
     () => {
-      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * 1.4);
+      const sticky = stickyRunway(runway.current, root.current, () => window.innerHeight * (lite ? 1 : 1.4));
       const mm = gsap.matchMedia();
       mm.add(NO_PREF_QUERY(), () => {
         const split = new SplitText('[data-manifesto]', { type: 'words' });
-        gsap.set(split.words, { opacity: 0.14 });
+        // colour only: an opacity below 1 makes every word its own compositing group
+        gsap.set(split.words, { color: 'rgba(255, 255, 255, 0.14)' });
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: runway.current,
-            start: () => `top+=${sticky.lead()} top`,
-            end: 'bottom bottom',
-            scrub: 0.6
+            start: sticky.start,
+            end: sticky.end,
+            scrub: scrubbed(0.6)
           }
         });
         tl.from('[data-manifesto-head]', { y: 30, opacity: 0, duration: 0.15, ease: 'power2.out' }, 0)
           // each word: lights up sky, then settles to white
-          .to(split.words, { opacity: 1, color: '#50B4E8', duration: 0.12, stagger: 0.022, ease: 'none' }, 0.05)
+          .to(split.words, { color: '#50B4E8', duration: 0.12, stagger: 0.022, ease: 'none' }, 0.05)
           .to(split.words, { color: '#ffffff', duration: 0.2, stagger: 0.022, ease: 'none' }, 0.17)
           .from('[data-manifesto-stat]', { y: 40, opacity: 0, stagger: 0.06, duration: 0.2, ease: 'power3.out' }, '>-0.25')
           // breathe out before the showreel arrives
-          .to('[data-manifesto-body]', { scale: 0.94, opacity: 0.35, duration: 0.25, ease: 'power1.in' }, '>+0.1');
+          .to('[data-manifesto-body]', { ...(lite ? {} : { scale: 0.94 }), opacity: 0.35, duration: 0.25, ease: 'power1.in' }, '>+0.1');
         return () => split.revert();
       });
       return () => {
@@ -49,12 +51,11 @@ export default function Manifesto() {
   // the outer div is the scroll runway the section stays put in (see stickyRunway);
   // its negative margin slides the chapter over the hero's darkening tail (no dead black stretch)
   return (
-    <div id="manifesto" ref={runway} className="relative z-30 -mt-[35svh]">
-      <section ref={root} className="sticky -mt-px flex min-h-[100svh] items-center overflow-hidden bg-night py-[14vh] text-white">
+    <div id="manifesto" ref={runway} className="relative z-30 -mt-[35svh] overflow-clip">
+      <section ref={root} className="sticky -mt-px flex min-h-lvh items-center overflow-hidden bg-night py-[14vh] text-white max-md:bg-[radial-gradient(70%_55%_at_50%_0%,rgba(80,180,232,0.32)_0%,rgba(80,180,232,0.08)_45%,transparent_75%)]">
+        {!lite && (
         <div className="pointer-events-none absolute inset-0 opacity-70">
-          {lite ? (
-            <div className="h-full w-full bg-[radial-gradient(70%_55%_at_50%_0%,rgba(80,180,232,0.45)_0%,rgba(80,180,232,0.12)_45%,transparent_75%)]" />
-          ) : (
+          <Suspense fallback={null}>
           <LightRays
             raysOrigin="top-center"
             raysColor="#50B4E8"
@@ -68,9 +69,10 @@ export default function Manifesto() {
             maxDevicePixelRatio={0.75}
             intro={false}
           />
-          )}
+          </Suspense>
         </div>
-        <div data-manifesto-body className="frame relative origin-center">
+        )}
+        <div data-manifesto-body className="frame relative origin-center max-md:will-change-[opacity]">
           <Cross className="-left-[5px] -top-[60px] hidden md:block" />
           <Cross className="-right-[5px] -top-[60px] hidden md:block" />
           <div data-manifesto-head>

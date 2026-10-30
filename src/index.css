@@ -53,10 +53,16 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--color-paper);
+}
+
+/* phones skip it: the extra shaping pass is paid on every text repaint */
+@media (min-width: 768px) {
+  html {
+    text-rendering: optimizeLegibility;
+  }
 }
 
 html.lenis,
@@ -181,6 +187,22 @@ button {
   }
   .grain {
     display: none;
+  }
+  /* the wall is scaled every frame: no shadows or rings to re-rasterize, and its night backdrop hides them anyway */
+  .reel-wall {
+    --r: 14px;
+  }
+  .reel-wall .reel {
+    box-shadow: none;
+  }
+  .reel-wall .reel::after {
+    display: none;
+  }
+  /* state changes without animating a large box-shadow (a repaint per frame) */
+  .step-card,
+  .step-node,
+  .step-node > span {
+    transition: none !important;
   }
 }
 
@@ -318,20 +340,30 @@ button {
   color: var(--color-ink-2);
 }
 .chip-dot {
+  position: relative;
   width: 7px;
   height: 7px;
   border-radius: 99px;
   background: var(--color-sky-500);
-  box-shadow: 0 0 0 4px rgba(80, 180, 232, 0.2);
+}
+/* the pulse is a separate circle scaled and faded by the compositor: animating box-shadow repaints every frame */
+.chip-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
   animation: pulse-dot 2s var(--ease-expo) infinite;
 }
 @keyframes pulse-dot {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(80, 180, 232, 0.45);
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
   }
-  60% {
-    box-shadow: 0 0 0 7px rgba(80, 180, 232, 0);
+  60%,
+  100% {
+    transform: scale(3);
+    opacity: 0;
   }
 }
 
@@ -454,6 +486,32 @@ html.motion-off *::after {
 .scroller {
   font-family: var(--font-sans);
   filter: none;
+  will-change: transform; /* moved every frame: keep it on its own layer so the text is never repainted */
+}
+/* Compositor-only marquee (phones) */
+.marquee {
+  overflow: hidden;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee var(--marquee-time, 20s) linear infinite;
+}
+.marquee-reverse {
+  animation-direction: reverse;
+}
+.marquee-copy {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-around;
+  min-width: 100vw;
+}
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 #contact .curved-loop-jacket {
   min-height: 0;
@@ -726,6 +784,41 @@ html[lang='ar'] .hero-title {
     height: min(100%, 1200px);
     /* centred with top (not translate) so HeroScene can read it from offsetTop */
     top: max(0px, calc(50% - 600px));
+  }
+}
+
+/* Phones. Large blurred shadows are the most expensive thing to redraw at 3x density (measured in Safari's
+   engine: service cards 12 → 46 fps), so they become crisp hairlines. No filters on the rotating words either:
+   a filter stays expensive for as long as it is on screen. */
+@media (max-width: 767px) {
+  :root {
+    --shadow-soft: 0 0 0 1px rgba(23, 63, 90, 0.08);
+    --shadow-lift: 0 0 0 1px rgba(23, 63, 90, 0.1);
+    --shadow-sky: 0 0 0 0 transparent;
+  }
+  .reel,
+  .pill-dark,
+  .pill-sky {
+    box-shadow: none;
+  }
+  .pill-light {
+    box-shadow: 0 0 0 1px var(--color-line) inset;
+  }
+  /* the silk stand-in, veil and top fade painted once as a single layer instead of four stacked ones */
+  .hero-lite-bg {
+    background:
+      linear-gradient(to bottom, rgba(246, 249, 251, 0.8), transparent 128px),
+      linear-gradient(to top, var(--color-paper) 40%, rgba(246, 249, 251, 0.9) 62%, rgba(246, 249, 251, 0.35) 100%),
+      radial-gradient(120% 70% at 85% 15%, #bfe6fa 0%, #7cc8ef 38%, #56b7e9 70%);
+  }
+  .hero-focus .focus-word,
+  .hero-focus .focus-word.active,
+  .hero-focus .corner {
+    filter: none;
+  }
+  .chip-dot::after {
+    animation: none;
+    opacity: 0;
   }
 }
 
