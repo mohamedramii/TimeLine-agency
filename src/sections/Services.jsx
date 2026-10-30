@@ -45,7 +45,7 @@ function Dashboard({ d }) {
           4.6x
         </span>
       </div>
-      <div className="mt-3 flex h-12 items-end gap-2 md:mt-4 md:h-28">
+      <div className="mt-3 flex h-12 items-end gap-2 md:mt-4 md:h-28 [@media(max-height:860px)]:!h-12">
         {bars.map((b, i) => (
           <span
             key={i}
@@ -54,7 +54,7 @@ function Dashboard({ d }) {
           />
         ))}
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] text-white/60 md:mt-4">
+      <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] text-white/60 md:mt-4 [@media(max-height:700px)_and_(min-width:768px)]:hidden">
         {[
           [d.ctr, '3.8%'],
           [d.cpa, '−42%'],
@@ -89,24 +89,46 @@ function ServiceCard({ s, look, open, t, media }) {
     <SpotlightCard
       theme={tone.theme}
       spotlightColor={tone.spot}
-      className={`service-card !rounded-[30px] !p-0 flex h-full max-h-[540px] w-[min(500px,84vw)] shrink-0 flex-col md:h-[min(64svh,600px)] md:max-h-none ${tone.text}`}
+      className={`service-card !rounded-[30px] !p-0 flex h-full max-h-[540px] w-[min(500px,84vw)] shrink-0 flex-col md:h-[min(64svh,600px)] md:max-h-none ${screen ? 'md:w-[min(640px,84vw)]' : ''} ${tone.text}`}
       style={{
         '--spotlight-card-surface': tone.surface,
         '--spotlight-card-shadow': look.tone === 'light' ? 'var(--shadow-soft)' : 'var(--shadow-lift)',
         '--spotlight-card-border': look.tone === 'light' ? 'var(--color-line)' : 'rgba(255,255,255,0.08)'
       }}
     >
+      {screen ? (
+        <>
+          {/* the screen is the card: edge to edge, and it only gives up height when the card is short */}
+          <Screen item={screen} src={screen.loop} onOpen={open} className="screen-fill" />
+          <div className="flex shrink-0 grow flex-col p-5 md:px-7 md:py-6">
+            <div className="flex items-baseline gap-3">
+              <span dir="ltr" className="display font-sans text-4xl opacity-90 md:text-5xl">
+                {look.no}
+              </span>
+              <h3 className="text-[23px] font-medium leading-[1.15] tracking-[-0.03em] md:text-[30px]">{s.title}</h3>
+            </div>
+            <p className={`mt-2 text-[14px] leading-relaxed md:text-[15px] ${tone.sub}`}>{text}</p>
+            <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+              <Pill href={look.cta} variant="dark" size="sm">
+                {s.cta}
+              </Pill>
+              <span className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone.chip}`}>{priceTag(look, t.services.priceTags)}</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
       <div className="flex items-start justify-between p-5 pb-0 md:p-8 md:pb-0">
         <span dir="ltr" className="display font-sans text-5xl opacity-90 md:text-7xl">
           {look.no}
         </span>
         <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone.chip}`}>{priceTag(look, t.services.priceTags)}</span>
       </div>
-      <div className={`flex min-h-0 flex-1 gap-4 p-5 md:gap-5 md:p-8 ${screen ? 'flex-col-reverse' : 'flex-row'}`}>
-        <div className={`flex min-w-0 flex-col ${screen ? 'shrink-0' : 'flex-1'}`}>
+      <div className="flex min-h-0 flex-1 flex-row gap-4 p-5 md:gap-5 md:p-8">
+        <div className="flex min-w-0 flex-1 flex-col">
           <h3 className="mt-auto text-[23px] font-medium leading-[1.15] tracking-[-0.03em] md:text-[34px]">{s.title}</h3>
           <p className={`mt-2 text-[14px] leading-relaxed md:mt-3 md:text-[15px] ${tone.sub}`}>{text}</p>
-          <div className={`mt-5 hidden flex-wrap gap-1.5 ${screen ? '' : 'sm:flex'} ${look.dashboard ? '[@media(max-height:860px)]:!hidden' : ''}`}>
+          <div className={`mt-5 hidden flex-wrap gap-1.5 sm:flex ${look.dashboard ? '[@media(max-height:860px)]:!hidden' : ''}`}>
             {s.tags.map(tag => (
               <span key={tag} className={`rounded-full px-3 py-1 text-[12px] font-medium ${tone.chip}`}>
                 {tag}
@@ -121,7 +143,6 @@ function ServiceCard({ s, look, open, t, media }) {
             </div>
           )}
         </div>
-        {screen && <Screen item={screen} src={screen.tile} onOpen={open} className="screen-fill w-full !rounded-xl" />}
         {item && (
           <button
             type="button"
@@ -143,6 +164,8 @@ function ServiceCard({ s, look, open, t, media }) {
         <div className="px-5 pb-5 md:px-8 md:pb-8">
           <Dashboard d={t.services.dashboard} />
         </div>
+      )}
+        </>
       )}
     </SpotlightCard>
   );
