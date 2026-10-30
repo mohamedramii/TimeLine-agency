@@ -3,7 +3,7 @@ import { gsap, scrubbed, stickyRunway, useGSAP } from '../lib/gsap';
 import { lite, motionOff } from '../lib/prefs';
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import SplitText from '../components/reactbits/SplitText';
-import { Pill, Screen, Timestamp, Video } from '../components/ui';
+import { Pill, ScreenCycle, Timestamp, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
 import { chapterTimes, egp, maxSaving, packages, prices, serviceLooks } from '../content/shared';
 import { useMedia, useRtl, useT } from '../i18n';
@@ -84,22 +84,22 @@ function ServiceCard({ s, look, open, t, media }) {
   const text = typeof s.text === 'function' ? s.text(egp(maxSaving())) : s.text;
   const item = look.media ? media[look.media] : null;
   const image = look.image ? media[look.image] : null;
-  const screen = look.screen ? media[look.screen] : null;
+  const screens = look.screens?.map(([key, label]) => ({ ...media[key], label }));
   return (
     <SpotlightCard
       theme={tone.theme}
       spotlightColor={tone.spot}
-      className={`service-card !rounded-[30px] !p-0 flex h-full max-h-[540px] w-[min(500px,84vw)] shrink-0 flex-col md:h-[min(64svh,600px)] md:max-h-none ${screen ? 'md:w-[min(640px,84vw)]' : ''} ${tone.text}`}
+      className={`service-card !rounded-[30px] !p-0 flex h-full max-h-[540px] w-[min(500px,84vw)] shrink-0 flex-col md:h-[min(64svh,600px)] md:max-h-none ${screens ? 'md:w-[min(640px,84vw)]' : ''} ${tone.text}`}
       style={{
         '--spotlight-card-surface': tone.surface,
         '--spotlight-card-shadow': look.tone === 'light' ? 'var(--shadow-soft)' : 'var(--shadow-lift)',
         '--spotlight-card-border': look.tone === 'light' ? 'var(--color-line)' : 'rgba(255,255,255,0.08)'
       }}
     >
-      {screen ? (
+      {screens ? (
         <>
           {/* the screen is the card: edge to edge, and it only gives up height when the card is short */}
-          <Screen item={screen} src={screen.loop} onOpen={open} className="screen-fill" />
+          <ScreenCycle reel={media[look.reel]} items={screens} onOpen={open} className="screen-fill" />
           <div className="flex shrink-0 grow flex-col p-5 md:px-7 md:py-6">
             <div className="flex items-baseline gap-3">
               <span dir="ltr" className="display font-sans text-4xl opacity-90 md:text-5xl">

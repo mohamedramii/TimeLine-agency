@@ -436,6 +436,26 @@ video:not([controls])::-webkit-media-controls {
   padding: 0 12px;
   background: #10222f;
 }
+.screen-bar {
+  position: relative;
+}
+/* fills once per project in the rotation: the brand's clock, run by the compositor */
+.screen-tick {
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--color-sky-400);
+  transform-origin: left;
+  animation: screen-tick 2s linear both;
+}
+@keyframes screen-tick {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
 .screen-bar i {
   width: 8px;
   height: 8px;

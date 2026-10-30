@@ -5,7 +5,10 @@ import { useT } from '../i18n';
 import { videoUrl } from '../lib/video';
 
 const ModalContext = createContext(() => {});
+const WatchingContext = createContext(false);
 export const usePlayer = () => useContext(ModalContext);
+// true while the full player is open, so loops behind it can hold still
+export const useWatching = () => useContext(WatchingContext);
 
 // Full-screen player for a reel, with sound. `open(mediaItem)` from anywhere.
 export function VideoModalProvider({ children }) {
@@ -28,7 +31,7 @@ export function VideoModalProvider({ children }) {
 
   return (
     <ModalContext.Provider value={open}>
-      {children}
+      <WatchingContext.Provider value={!!item}>{children}</WatchingContext.Provider>
       <AnimatePresence>
         {item && (
           <motion.div

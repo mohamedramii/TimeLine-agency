@@ -55,7 +55,7 @@ so files are as small as possible with no visible loss. Results are logged to `s
 - `av1/…` — AV1 versions, 30–50% smaller; served automatically where the device decodes AV1 smoothly
   (desktop Chrome/Edge/Firefox, phones with hardware AV1). See `src/lib/video.js`.
 - `name.webp` — posters; photos are WebP too. Brand SVGs are run through SVGO.
-- `web-*` — web & app screen recordings, cleaned and encoded by `python scripts/encode-web-work.py <recordings folder>` (crops the browser toolbar, blurs personal details, cuts DevTools and client lists).
+- `web-*` — web & app screen recordings, cleaned and encoded by `python scripts/encode-web-work.py <recordings folder>` (crops the browser toolbar, blurs personal details, cuts DevTools and client lists). `web-reel` is the rotation on the services card: seven projects, two seconds each, in one clip.
 - The 3D hero is plain Three.js (no React-Three-Fiber/drei) and only loads on tablets/desktops.
 
 ## Phones

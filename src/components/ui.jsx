@@ -5,6 +5,7 @@ import { brand } from '../content/shared';
 import { videoUrl } from '../lib/video';
 import { cachedUrl } from '../lib/preload';
 import { lite } from '../lib/prefs';
+import { useWatching } from './VideoModal';
 
 export const ArrowIcon = ({ className = '' }) => (
   <svg viewBox="0 0 16 16" className={`dir-flip ${className}`} width="14" height="14" fill="none" aria-hidden="true">
@@ -112,8 +113,10 @@ if (typeof window !== 'undefined') {
 // Plays only while on screen — keeps a wall of reels cheap.
 export function Video({ src, poster, className = '', eager = false, ...rest }) {
   const ref = useRef(null);
+  const inView = useRef(false);
   const [load, setLoad] = useState(eager);
   const [playing, setPlaying] = useState(false);
+  const watching = useWatching();
 
   useEffect(() => {
     const el = ref.current;
@@ -123,6 +126,7 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
     el.setAttribute('muted', '');
     const io = new IntersectionObserver(
       ([entry]) => {
+        inView.current = entry.isIntersecting;
         if (entry.isIntersecting) {
           setLoad(true);
           play(el);
@@ -143,6 +147,18 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
     if (!el || !load || !src) return;
     if (onScreen(el)) play(el);
   }, [src, load]);
+
+  // everything behind the full player holds still until it closes
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (watching) {
+      startQueue.delete(el);
+      el.pause?.();
+    } else if (inView.current) {
+      play(el);
+    }
+  }, [watching]);
 
   // The poster is a real image underneath: it shows at once (iPhones draw nothing for a <video> without a
   // source), and the clip fades in over it once frames are actually playing.
@@ -178,6 +194,43 @@ export function Screen({ item, url, src, onOpen, className = '', ...rest }) {
       </span>
       <span className="screen-view">
         <Video src={src} poster={item.poster} />
+      </span>
+    </button>
+  );
+}
+
+// The reel's timing, as cut by scripts/encode-web-work.py.
+const REEL_STEP = 2;
+const REEL_FADE = 0.4;
+
+// Several projects in one browser window, a new one every two seconds. It is a single pre-cut clip, so it costs what
+// any one video costs: swapping real videos hitched the page on every change. The name and the tap follow its clock.
+export function ScreenCycle({ reel, items, onOpen, className = '' }) {
+  const [at, setAt] = useState(0);
+  const [running, setRunning] = useState(false);
+  const item = items[at];
+
+  return (
+    <button type="button" onClick={() => onOpen(item)} className={`screen ${className}`} data-cursor="play" aria-label={item.title}>
+      <span className="screen-bar" dir="ltr" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        <span className="screen-url">{item.label}</span>
+        {running && <b key={at} className="screen-tick" />}
+      </span>
+      <span className="screen-view">
+        <Video
+          src={reel.loop}
+          poster={reel.poster}
+          onTimeUpdate={e => {
+            if (e.target.paused) return;
+            setRunning(true);
+            // the name changes halfway through each crossfade
+            setAt(Math.floor((e.target.currentTime + REEL_FADE / 2) / REEL_STEP) % items.length);
+          }}
+          onPause={() => setRunning(false)}
+        />
       </span>
     </button>
   );

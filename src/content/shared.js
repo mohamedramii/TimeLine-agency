@@ -37,7 +37,8 @@ export const mediaFiles = {
   webByv: screen('web-byv'),
   webTravelio: screen('web-travelio'),
   webCulin: screen('web-culin'),
-  webIfish: screen('web-ifish')
+  webIfish: screen('web-ifish'),
+  webReel: m('web-reel')
 };
 
 export const brand = {
@@ -65,7 +66,24 @@ export const serviceLooks = [
   { no: '02', image: 'zatWall', tone: 'sky', price: 'page' },
   { no: '03', image: 'zatCup', tone: 'light', price: 'posts5' },
   { no: '04', dashboard: true, tone: 'night', price: 'sponsor' },
-  { no: '05', screen: 'webSnap', tone: 'light', price: 'sponsor', cta: '#digital' },
+  {
+    no: '05',
+    // one clip that changes project every 2 seconds; the projects in the order it was cut (REEL in
+    // scripts/encode-web-work.py), each one different from the one before it
+    reel: 'webReel',
+    screens: [
+      ['webTravelio', 'Travelio'],
+      ['webCulin', 'Culin'],
+      ['webNizamStory', 'Nizam'],
+      ['webByv', 'BookYourVibes'],
+      ['webSnap', 'Snap Action'],
+      ['webIfish', 'i-Fish'],
+      ['webRadx', 'RADX']
+    ],
+    tone: 'light',
+    price: 'sponsor',
+    cta: '#digital'
+  },
   { no: '06', media: 'santos', tone: 'sky', price: 'packages', cta: '#pricing' }
 ];
 

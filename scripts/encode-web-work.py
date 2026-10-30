@@ -9,10 +9,13 @@ shouldn't be public (DevTools, extension popups, customer and client lists) and 
     name.mp4 + av1/name.mp4   7-second preview, sharp (desktop)
     name-tile.mp4 + av1/...   7-second preview, small (phones, small cards)
     name-full.mp4             the cleaned walkthrough, opens on tap (H.264 only, already small)
+
+The name web-reel builds the rotation on the services card instead: one clip, a new project every two seconds.
 """
 import os
 import subprocess
 import sys
+import tempfile
 
 MEDIA = os.path.join(os.path.dirname(__file__), '..', 'public', 'media')
 
@@ -30,9 +33,19 @@ CLIPS = {
     'web-radx': {'src': 'radx-walkthrough', 'top': 54, 'keep': [(0, 32)], 'preview': (0, 7)},
     'web-byv': {'src': 'bookyourvibes-walkthrough', 'top': 42, 'keep': [(0, 41.5), (48.5, 91.9)], 'preview': (0, 7)},
     'web-travelio': {'src': 'travelio-walkthrough', 'preview': (0, 7)},
-    'web-culin': {'src': 'culin-walkthrough', 'preview': (0, 7)},
+    'web-culin': {'src': 'culin-walkthrough', 'preview': (5, 7)},
     'web-ifish': {'src': 'i-fish-walkthrough', 'top': 42, 'keep': [(5, 24.1)], 'preview': (5, 7)},
 }
+
+# Same order as `screens` in src/content/shared.js, same timing as REEL_* in src/components/ui.jsx.
+REEL = ['web-travelio', 'web-culin', 'web-nizam-story', 'web-byv', 'web-snap', 'web-ifish', 'web-radx']
+REEL_STEP = 2
+REEL_FADE = 0.4
+WINDOW = 2.08  # .screen-view aspect-ratio
+
+COMMON = ['-an', '-map_metadata', '-1', '-map', '[out]', '-movflags', '+faststart', '-g', '60']
+X264 = ['-c:v', 'libx264', '-preset', 'veryslow', '-profile:v', 'high']
+AV1 = ['-c:v', 'libaom-av1', '-cpu-used', '6', '-row-mt', '1', '-tiles', '2x1', '-b:v', '0']
 
 
 def probe(path):
@@ -64,30 +77,65 @@ def run(*args):
     subprocess.run(['ffmpeg', '-v', 'error', '-y', *args], check=True)
 
 
+def reel(src_dir):
+    """Each project's opening cut to the window's shape and crossfaded into the next; the last fades back into the
+    first, and the cut starts where that fade ends, so the loop has no seam."""
+    out = lambda *p: os.path.join(MEDIA, *p)
+    with tempfile.TemporaryDirectory() as tmp:
+        inputs = []
+        for name in REEL:
+            clip = CLIPS[name]
+            src = os.path.join(src_dir, clip['src'] + '.mp4')
+            w, h = probe(src)
+            part = os.path.join(tmp, f'{name}.mp4')
+            run('-ss', str(clip['preview'][0]), '-t', str(REEL_STEP + REEL_FADE), '-i', src, '-filter_complex', graph(clip, w, h, 1280), '-map', '[out]', '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '8', part)
+            inputs += ['-i', part]
+        inputs += inputs[:2]
+
+        def montage(width):
+            height = round(width / WINDOW / 2) * 2
+            count = len(REEL)
+            chain = [f'[{i}:v]scale={width}:{height}:force_original_aspect_ratio=increase:flags=lanczos,crop={width}:{height}:(iw-{width})/2:0,setsar=1,fps=30[p{i}]' for i in range(count + 1)]
+            last = 'p0'
+            for i in range(1, count + 1):
+                chain.append(f'[{last}][p{i}]xfade=transition=fade:duration={REEL_FADE}:offset={i * REEL_STEP}[x{i}]')
+                last = f'x{i}'
+            chain.append(f'[{last}]trim={REEL_FADE}:{count * REEL_STEP + REEL_FADE},setpts=PTS-STARTPTS,format=yuv420p[out]')
+            return ';'.join(chain)
+
+        run(*inputs, '-filter_complex', montage(1280), '-map', '[out]', '-frames:v', '1', '-c:v', 'libwebp', '-quality', '74', '-map_metadata', '-1', out('web-reel.webp'))
+        run(*inputs, '-filter_complex', montage(1280), *COMMON, *X264, '-crf', '27', out('web-reel.mp4'))
+        run(*inputs, '-filter_complex', montage(1280), *COMMON, *AV1, '-crf', '38', out('av1', 'web-reel.mp4'))
+        run(*inputs, '-filter_complex', montage(720), *COMMON, *X264, '-crf', '28', out('web-reel-tile.mp4'))
+        run(*inputs, '-filter_complex', montage(720), *COMMON, *AV1, '-crf', '40', out('av1', 'web-reel-tile.mp4'))
+    size = lambda p: os.path.getsize(p) // 1024
+    print('web-reel poster', size(out('web-reel.webp')), 'preview', size(out('web-reel.mp4')), 'av1', size(out('av1', 'web-reel.mp4')), 'tile', size(out('web-reel-tile.mp4')), 'av1', size(out('av1', 'web-reel-tile.mp4')), 'KB', flush=True)
+
+
 def main():
     src_dir = sys.argv[1]
-    names = sys.argv[2:] or list(CLIPS)
+    names = sys.argv[2:] or [*CLIPS, 'web-reel']
     os.makedirs(os.path.join(MEDIA, 'av1'), exist_ok=True)
     for name in names:
+        if name == 'web-reel':
+            reel(src_dir)
+            continue
         clip = CLIPS[name]
         src = os.path.join(src_dir, clip['src'] + '.mp4')
         w, h = probe(src)
         start, secs = clip['preview']
         window = ['-ss', str(start), '-t', str(secs), '-i', src]
-        common = ['-an', '-map_metadata', '-1', '-map', '[out]', '-movflags', '+faststart', '-g', '60']
-        x264 = ['-c:v', 'libx264', '-preset', 'veryslow', '-profile:v', 'high']
-        av1 = ['-c:v', 'libaom-av1', '-cpu-used', '6', '-row-mt', '1', '-tiles', '2x1', '-b:v', '0']
         out = lambda *p: os.path.join(MEDIA, *p)
         # poster (a frame from the start of the preview)
         run('-ss', str(start + 0.4), '-i', src, '-filter_complex', graph(clip, w, h, 1280), '-map', '[out]', '-frames:v', '1', '-c:v', 'libwebp', '-quality', '74', '-map_metadata', '-1', out(f'{name}.webp'))
         # sharp preview
-        run(*window, '-filter_complex', graph(clip, w, h, 1280), *common, *x264, '-crf', '27', out(f'{name}.mp4'))
-        run(*window, '-filter_complex', graph(clip, w, h, 1280), *common, *av1, '-crf', '38', out('av1', f'{name}.mp4'))
+        run(*window, '-filter_complex', graph(clip, w, h, 1280), *COMMON, *X264, '-crf', '27', out(f'{name}.mp4'))
+        run(*window, '-filter_complex', graph(clip, w, h, 1280), *COMMON, *AV1, '-crf', '38', out('av1', f'{name}.mp4'))
         # small preview
-        run(*window, '-filter_complex', graph(clip, w, h, 720), *common, *x264, '-crf', '28', out(f'{name}-tile.mp4'))
-        run(*window, '-filter_complex', graph(clip, w, h, 720), *common, *av1, '-crf', '40', out('av1', f'{name}-tile.mp4'))
+        run(*window, '-filter_complex', graph(clip, w, h, 720), *COMMON, *X264, '-crf', '28', out(f'{name}-tile.mp4'))
+        run(*window, '-filter_complex', graph(clip, w, h, 720), *COMMON, *AV1, '-crf', '40', out('av1', f'{name}-tile.mp4'))
         # the full walkthrough
-        run('-i', src, '-filter_complex', graph(clip, w, h, min(w - 10, 1600), clip.get('keep')), *common, *x264, '-preset', 'slow', '-crf', '26', out(f'{name}-full.mp4'))
+        run('-i', src, '-filter_complex', graph(clip, w, h, min(w - 10, 1600), clip.get('keep')), *COMMON, *X264, '-preset', 'slow', '-crf', '26', out(f'{name}-full.mp4'))
         size = lambda p: os.path.getsize(p) // 1024
         print(name, 'poster', size(out(f'{name}.webp')), 'preview', size(out(f'{name}.mp4')), 'av1', size(out('av1', f'{name}.mp4')), 'tile', size(out(f'{name}-tile.mp4')), 'av1', size(out('av1', f'{name}-tile.mp4')), 'full', size(out(f'{name}-full.mp4')), 'KB', flush=True)
 
