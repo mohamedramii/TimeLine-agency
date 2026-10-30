@@ -416,6 +416,70 @@ video:not([controls])::-webkit-media-controls {
   pointer-events: none;
 }
 
+/* Browser window around a screen recording */
+.screen {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--color-night-2);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 40px 80px -40px rgba(80, 180, 232, 0.45);
+  transform: translateZ(0);
+}
+.screen-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  background: #10222f;
+}
+.screen-bar i {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.22);
+}
+.screen-url {
+  margin-left: 10px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.screen-view {
+  display: block;
+  position: relative;
+  aspect-ratio: 2.08;
+}
+.screen-view video,
+.screen-view img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* inside a card: takes whatever height is left instead of its own proportions */
+.screen-fill {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+}
+.screen-fill .screen-view {
+  flex: 1 1 0;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
 /* Section label "00:30 — WHY WE EXIST" */
 .timestamp {
   display: inline-flex;
@@ -800,6 +864,9 @@ html[lang='ar'] .hero-title {
   .pill-dark,
   .pill-sky {
     box-shadow: none;
+  }
+  .screen {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
   }
   .pill-light {
     box-shadow: 0 0 0 1px var(--color-line) inset;

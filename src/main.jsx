@@ -23,7 +23,7 @@ if (lang === 'ar') {
     .querySelector('meta[name="description"]')
     ?.setAttribute(
       'content',
-      'TIME LINE is a content-first marketing agency in Alexandria: reels production, page management, post design and sponsored ads — packages from EGP 6,500.'
+      'TIME LINE is a content-first marketing agency in Alexandria: reels, page management, post design, sponsored ads, websites and apps — packages from EGP 6,500.'
     );
   document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://time-line-agency.vercel.app/?lang=en');
 }

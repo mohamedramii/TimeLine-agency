@@ -166,6 +166,23 @@ export function Video({ src, poster, className = '', eager = false, ...rest }) {
   );
 }
 
+// A browser window around a looping screen recording. The preview plays muted; a tap opens the full walkthrough.
+export function Screen({ item, url, src, onOpen, className = '', ...rest }) {
+  return (
+    <button type="button" onClick={() => onOpen(item)} className={`screen ${className}`} data-cursor="play" aria-label={item.title} {...rest}>
+      <span className="screen-bar" dir="ltr" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        {url && <span className="screen-url">{url}</span>}
+      </span>
+      <span className="screen-view">
+        <Video src={src} poster={item.poster} />
+      </span>
+    </button>
+  );
+}
+
 // Live local time for the agency's city — "time" is the brand. Ticks only while it is on screen,
 // and writes straight to the DOM so a second never costs a React render.
 const clockText = (() => {

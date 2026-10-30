@@ -11,6 +11,9 @@ const m = (name, full) => ({
   full: full ? `/media/${name}-full.mp4` : `/media/${name}.mp4`
 });
 
+// Screen recordings of web & app work: wide clips with a sharp and a small 7-second preview.
+const screen = name => ({ ...m(name, true), wide: true });
+
 export const mediaFiles = {
   zatPour: m('zat-pour'),
   zatStir: m('zat-stir'),
@@ -22,7 +25,19 @@ export const mediaFiles = {
   alexVlog: m('alex-vlog', true),
   talk: m('talk', true),
   zatCup: { poster: '/media/zat-cup.webp' },
-  zatWall: { poster: '/media/zat-wall.webp' }
+  zatWall: { poster: '/media/zat-wall.webp' },
+  webNizamErp: screen('web-nizam-erp'),
+  webNizamStory: screen('web-nizam-story'),
+  webKhwReports: screen('web-khw-reports'),
+  webKhwSources: screen('web-khw-sources'),
+  webSnap: screen('web-snap'),
+  webJeel: screen('web-jeel'),
+  webVbooking: screen('web-vbooking'),
+  webRadx: screen('web-radx'),
+  webByv: screen('web-byv'),
+  webTravelio: screen('web-travelio'),
+  webCulin: screen('web-culin'),
+  webIfish: screen('web-ifish')
 };
 
 export const brand = {
@@ -50,7 +65,24 @@ export const serviceLooks = [
   { no: '02', image: 'zatWall', tone: 'sky', price: 'page' },
   { no: '03', image: 'zatCup', tone: 'light', price: 'posts5' },
   { no: '04', dashboard: true, tone: 'night', price: 'sponsor' },
-  { no: '05', media: 'santos', tone: 'sky', price: 'packages', cta: '#pricing' }
+  { no: '05', screen: 'webSnap', tone: 'light', price: 'sponsor', cta: '#digital' },
+  { no: '06', media: 'santos', tone: 'sky', price: 'packages', cta: '#pricing' }
+];
+
+// Web & app work (copy lives in the dictionaries under `digital`)
+export const digitalFeatured = [
+  { id: 'nizam', name: 'Nizam', media: 'webNizamErp', extra: 'webNizamStory', url: 'nizam-accounting.com' },
+  { id: 'khwarizmi', name: 'Khwarizmi', media: 'webKhwReports', extra: 'webKhwSources', url: 'alkhwarizmi.com' },
+  { id: 'snap', name: 'Snap Action', media: 'webSnap', url: 'snapaction.com' },
+  { id: 'jeel', name: 'JeelTech', media: 'webJeel', url: 'jeeltech.com' }
+];
+export const digitalMore = [
+  { id: 'vbooking', name: 'vbooking', media: 'webVbooking' },
+  { id: 'radx', name: 'RADX', media: 'webRadx' },
+  { id: 'byv', name: 'BookYourVibes', media: 'webByv' },
+  { id: 'travelio', name: 'Travelio', media: 'webTravelio' },
+  { id: 'culin', name: 'Culin', media: 'webCulin' },
+  { id: 'ifish', name: 'i-Fish', media: 'webIfish' }
 ];
 
 export const caseLooks = [
@@ -60,9 +92,9 @@ export const caseLooks = [
   { id: 'founder', media: ['talk', 'zatFinal'], tone: 'light' }
 ];
 
-export const navTargets = ['#work', '#services', '#process', '#pricing', '#faq'];
-export const chapterIds = ['top', 'manifesto', 'showreel', 'services', 'work', 'process', 'results', 'pricing', 'faq', 'contact'];
-export const chapterTimes = ['00:00', '00:30', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00'];
+export const navTargets = ['#work', '#services', '#digital', '#process', '#pricing', '#faq'];
+export const chapterIds = ['top', 'manifesto', 'showreel', 'services', 'work', 'process', 'results', 'pricing', 'faq', 'contact', 'digital'];
+export const chapterTimes = ['00:00', '00:30', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '03:30'];
 
 // Real price list (EGP). Edit numbers here; package values and savings are computed from them.
 export const prices = {

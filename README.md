@@ -22,6 +22,7 @@ npm run preview  # serve the production build
 | 01:00 | Showreel           | Canvas zoom-out: from inside one reel to a wall of 15 reels             |
 | 02:00 | What we do         | Pinned horizontal scroll of service cards (reverses for Arabic)        |
 | 03:00 | Selected work      | Sticky stacked case cards                                              |
+| 03:30 | Web & apps         | Websites and apps on real screens: 7-second previews, full walkthrough on tap |
 | 04:00 | The timeline       | Line draws down the page, clock hand rides the tip, milestones light up |
 | 05:00 | Results            | Count-ups, velocity marquee, testimonials, logo loop                   |
 | 06:00 | Packages           | 3 package cards with real savings, single services, sponsor on request |
@@ -54,6 +55,7 @@ so files are as small as possible with no visible loss. Results are logged to `s
 - `av1/…` — AV1 versions, 30–50% smaller; served automatically where the device decodes AV1 smoothly
   (desktop Chrome/Edge/Firefox, phones with hardware AV1). See `src/lib/video.js`.
 - `name.webp` — posters; photos are WebP too. Brand SVGs are run through SVGO.
+- `web-*` — web & app screen recordings, cleaned and encoded by `python scripts/encode-web-work.py <recordings folder>` (crops the browser toolbar, blurs personal details, cuts DevTools and client lists).
 - The 3D hero is plain Three.js (no React-Three-Fiber/drei) and only loads on tablets/desktops.
 
 ## Phones
@@ -67,4 +69,4 @@ Phones (`lite` in `src/lib/prefs.js`, under 768 px) run a lighter build of the s
 ## Visitor preferences
 
 - Language: header button (عربي / EN) or `?lang=en` / `?lang=ar`.
-- Motion: on by default. If the device reports "reduced motion" (e.g. Windows → Animation effects off) the visitor is asked once; there is also a Motion toggle in the footer.
+- Motion: always on (the OS "reduced motion" hint is ignored on purpose).

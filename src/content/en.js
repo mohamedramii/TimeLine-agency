@@ -20,8 +20,8 @@ const en = {
     service: 'Service',
     playShowreel: 'Play showreel'
   },
-  nav: ['Work', 'Services', 'Process', 'Pricing', 'FAQ'],
-  chapters: ['The beginning', 'Why we exist', 'Showreel', 'What we do', 'Selected work', 'The timeline', 'Results', 'Packages', 'Questions', 'Your next chapter'],
+  nav: ['Work', 'Services', 'Web & apps', 'Process', 'Pricing', 'FAQ'],
+  chapters: ['The beginning', 'Why we exist', 'Showreel', 'What we do', 'Selected work', 'The timeline', 'Results', 'Packages', 'Questions', 'Your next chapter', 'Web & apps'],
   mediaTitles: {
     zatPour: 'zat — The pour',
     zatStir: 'zat — Slow stir',
@@ -33,13 +33,25 @@ const en = {
     alexVlog: 'Alexandria spots — City guide',
     talk: 'Founder-led content — Strategy talk',
     zatCup: 'zat — Same place, better mood',
-    zatWall: 'zat — Interior'
+    zatWall: 'zat — Interior',
+    webNizamErp: 'Nizam — The accounting workspace',
+    webNizamStory: 'Nizam — The product website',
+    webKhwReports: 'Khwarizmi — Report builder',
+    webKhwSources: 'Khwarizmi — Connecting sources',
+    webSnap: 'Snap Action — The website',
+    webJeel: 'JeelTech — The platform',
+    webVbooking: 'vbooking — The booking flow',
+    webRadx: 'RADX — The website',
+    webByv: 'BookYourVibes — The website',
+    webTravelio: 'Travelio — The website',
+    webCulin: 'Culin — The website',
+    webIfish: 'i-Fish — The website'
   },
   hero: {
     lines: ['Make every', 'second of your'],
     accent: 'brand count.',
     rotating: ['remembered', 'shared', 'craved', 'sold out', 'talked about'],
-    sub: 'TIME LINE is a content-first marketing agency. We make reels, run pages, design posts and launch sponsored ads — so your brand stops the scroll.',
+    sub: 'TIME LINE is a content-first marketing agency. We make reels, run pages, design posts, launch sponsored ads and build websites and apps — so your brand stops the scroll.',
     focusLabel: 'Built to be',
     primary: 'Book a free strategy call',
     secondary: 'Watch the showreel',
@@ -67,12 +79,13 @@ const en = {
   services: {
     title: 'Everything your brand needs to',
     accent: 'own the feed.',
-    sub: 'One team for strategy, production and paid. No hand-offs, no lost-in-translation.',
+    sub: 'One team for strategy, production, paid and code. No hand-offs, no lost-in-translation.',
     items: [
       { title: 'Reel Production', text: 'Reels people watch to the end — idea, hook, script, shoot and edit, all in-house.', tags: ['Scripts', 'Filming', 'Editing', 'UGC', 'Food reviews'] },
       { title: 'Page Management', text: 'Calendars, captions, replies and community — a feed that finally feels like a brand.', tags: ['Content calendar', 'Captions', 'Community', 'Performance reports'] },
       { title: 'Post Design', text: 'Posts and stories in your brand identity that complete the reels and keep the feed consistent.', tags: ['Posts', 'Stories', 'Offers', 'Menus'] },
       { title: 'Sponsored Ads', text: 'Meta & TikTok ads on creative that sells — budget and targeting set with you around your goal.', tags: ['Meta', 'TikTok', 'Targeting', 'Retargeting'] },
+      { title: 'Websites & Apps', text: 'From design in Figma to code in React and Next.js — websites, apps and dashboards in Arabic and English.', tags: ['Figma', 'React', 'Next.js', 'Arabic RTL'], cta: 'See the work' },
       { title: 'Packages', text: save => `Reels + page management + posts in one package — up to ${save} EGP less than ordering separately.`, tags: ['8 reels', '12 reels', '20 reels'], cta: 'See packages' }
     ],
     priceTags: {
@@ -86,6 +99,59 @@ const en = {
     endTitle: 'Not sure what you need?',
     endText: 'Tell us about your brand and goal — we’ll pick the right package or service.',
     endLink: 'Talk to us →'
+  },
+  digital: {
+    title: 'Not just content. We also build',
+    accent: 'your site and your app.',
+    sub: 'We turn your idea into clear flows in Figma, then into a production-ready website or app in React and Next.js — in Arabic and English.',
+    offer: ['Company & brand sites', 'Landing pages', 'Stores & booking platforms', 'Web apps & dashboards', 'UI/UX design'],
+    watch: 'Watch the project',
+    projects: {
+      nizam: {
+        type: 'ERP · Accounting · Arabic',
+        text: 'An Arabic-first accounting platform that connects customers, quotes, invoices, inventory and reporting in one workspace, replacing scattered spreadsheets and tools.',
+        tags: ['Next.js', 'TypeScript', 'RTL', 'Design System'],
+        second: 'The website film'
+      },
+      khwarizmi: {
+        type: 'Analytics · APIs · Reports',
+        text: 'A marketing workspace that connects data sources and turns them into drag-and-drop reports, without the manual busywork.',
+        tags: ['React', 'APIs', 'Charts', 'Data Studio'],
+        second: 'Connecting sources'
+      },
+      snap: {
+        type: 'Creative website · Motion',
+        text: 'A bilingual website for an events company, where the movement is part of the brand itself rather than decoration.',
+        tags: ['GSAP', 'Three.js', 'Motion', 'Arabic + English']
+      },
+      jeel: {
+        type: 'Learning platform · AI',
+        text: 'An Arabic-first learning platform bringing courses, a digital library, progress reports and an AI assistant into one dashboard.',
+        tags: ['Next.js', 'Arabic-first', 'AI', 'Dashboard']
+      }
+    },
+    pillars: [
+      { title: 'Product & UX', text: 'User flows, information architecture and prototypes, grounded in how your business really works.' },
+      { title: 'Interface systems', text: 'Responsive UI, Arabic RTL, themes and reusable components that keep the product coherent as it grows.' },
+      { title: 'Engineering', text: 'React, Next.js, TypeScript, API integrations and motion with purpose — all the way to release.' }
+    ],
+    stats: [
+      ['3+', 'years bridging design and development'],
+      ['60+', 'reusable components across product systems'],
+      ['40%', 'less manual reporting through integrated workflows']
+    ],
+    moreTitle: 'And many more industries.',
+    more: {
+      vbooking: 'Travel platform and agent CRM',
+      radx: 'Smart QR concierge',
+      byv: 'Dubai yacht booking marketplace',
+      travelio: 'Turkey travel DMC website',
+      culin: 'Digital showroom for interiors',
+      ifish: 'Arabic system for fishing fleets'
+    },
+    ctaTitle: 'Got an idea for a website or app?',
+    ctaText: 'Tell us about it and we’ll tell you how to build it. Pricing is set on contact, based on the size of the project.',
+    cta: 'Talk to us about your project'
   },
   cases: {
     title: 'Stories we',
@@ -139,7 +205,7 @@ const en = {
     title: 'Numbers that make',
     accent: 'the clock worth it.',
     statLabels: ['organic views generated', 'brands on the timeline', 'pieces of content shipped', 'average return on ad spend'],
-    marquee: ['Reels', 'Page management', 'Posts', 'Sponsored ads', 'UGC', 'Filming'],
+    marquee: ['Reels', 'Page management', 'Posts', 'Sponsored ads', 'Websites & apps', 'UGC', 'Filming'],
     marquee2: 'TIME LINE  ✦  MARKETING  ✦  ALEXANDRIA  ✦',
     testimonialsLabel: 'Kind words',
     // SAMPLE testimonials
@@ -193,7 +259,8 @@ const en = {
       { q: 'Do you only work with food & beverage brands?', a: 'F&B is where we are strongest, but our process works for any brand that sells an experience — retail, beauty, real estate, fitness and personal brands.' },
       { q: 'Who owns the content?', a: 'You do. Every reel and post we make for you is yours to keep and use however you like.' },
       { q: 'Can we change our package?', a: 'Of course. Move up or down a package as you need, or add a single service — like an extra reel — anytime.' },
-      { q: 'Do you run sponsored ads?', a: 'Yes. We set up the campaign, targeting and creative with you; pricing depends on your goal and budget — message us for a quote.' }
+      { q: 'Do you run sponsored ads?', a: 'Yes. We set up the campaign, targeting and creative with you; pricing depends on your goal and budget — message us for a quote.' },
+      { q: 'Do you build websites and apps too?', a: 'Yes. We design and code websites, apps and dashboards in Arabic and English, from the first idea to release. Pricing is set on contact, based on the size of the project.' }
     ]
   },
   contact: {
@@ -206,7 +273,7 @@ const en = {
     studioTime: 'Studio time',
     formTitle: 'Start a project',
     name: 'Your name',
-    namePh: 'Mohamed',
+    namePh: 'Ahmed',
     brand: 'Brand',
     brandPh: 'Your café, shop or brand',
     reach: 'Phone or email',
@@ -215,7 +282,7 @@ const en = {
     budget: 'Budget',
     pkgLabel: 'Selected package',
     pkgRemove: 'Remove package',
-    services: ['Reels', 'Page management', 'Post design', 'Sponsored ads', 'Full package'],
+    services: ['Reels', 'Page management', 'Post design', 'Sponsored ads', 'Website or app', 'Full package'],
     budgets: ['< 5K EGP', '5–8K EGP', '8–12K EGP', '12K+ EGP'],
     send: 'Send via WhatsApp',
     reply: 'Replies in under 24h',

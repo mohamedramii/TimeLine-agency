@@ -30,6 +30,7 @@ export const codecReady = probe();
 export function videoUrl(url) {
   if (!url || !useAv1) return url;
   // full clips carry audio (Opus in the AV1 files) — keep H.264/AAC where Opus-in-MP4 isn't supported
-  if (url.endsWith('-full.mp4') && !useAv1Audio) return url;
+  // and the web-work walkthroughs ship as H.264 only: they are short and already tiny
+  if (url.endsWith('-full.mp4') && (!useAv1Audio || url.includes('/web-'))) return url;
   return url.replace('/media/', '/media/av1/');
 }

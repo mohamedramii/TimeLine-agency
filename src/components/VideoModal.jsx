@@ -43,19 +43,19 @@ export function VideoModalProvider({ children }) {
           >
             <div className="absolute inset-0 bg-night/80 backdrop-blur-xl" />
             <motion.div
-              className="relative flex h-full max-h-[86vh] items-center gap-8"
+              className={`relative flex items-center gap-8 ${item.wide ? 'w-full max-w-[1280px] flex-col md:items-start' : 'h-full max-h-[86vh]'}`}
               initial={{ y: 60, scale: 0.92, opacity: 0 }}
               animate={{ y: 0, scale: 1, opacity: 1, transition: { type: 'spring', stiffness: 170, damping: 22 } }}
               exit={{ y: 40, scale: 0.95, opacity: 0, transition: { duration: 0.3 } }}
               onClick={e => e.stopPropagation()}
             >
-              <div className="reel h-full !rounded-[30px]">
+              <div className={item.wide ? 'reel !aspect-[2.08] w-full !rounded-[16px] md:!rounded-[22px]' : 'reel h-full !rounded-[30px]'}>
                 <video src={videoUrl(item.full || item.loop)} poster={item.poster} autoPlay controls playsInline className="!object-contain bg-black" />
               </div>
-              <div className="hidden max-w-[260px] text-white md:block">
+              <div className={`hidden text-white md:block ${item.wide ? '' : 'max-w-[260px]'}`}>
                 <p className="mono-label text-sky-400">{t.ui.nowPlaying}</p>
                 <p className="mt-3 text-2xl font-medium tracking-tight">{item.title}</p>
-                <p className="mt-4 text-sm text-white/60">{t.ui.modalNote}</p>
+                {!item.wide && <p className="mt-4 text-sm text-white/60">{t.ui.modalNote}</p>}
               </div>
             </motion.div>
             <button

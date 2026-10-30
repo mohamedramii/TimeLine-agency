@@ -3,7 +3,7 @@ import { gsap, scrubbed, stickyRunway, useGSAP } from '../lib/gsap';
 import { lite, motionOff } from '../lib/prefs';
 import SpotlightCard from '../components/reactbits/SpotlightCard';
 import SplitText from '../components/reactbits/SplitText';
-import { Pill, Timestamp, Video } from '../components/ui';
+import { Pill, Screen, Timestamp, Video } from '../components/ui';
 import { usePlayer } from '../components/VideoModal';
 import { chapterTimes, egp, maxSaving, packages, prices, serviceLooks } from '../content/shared';
 import { useMedia, useRtl, useT } from '../i18n';
@@ -84,6 +84,7 @@ function ServiceCard({ s, look, open, t, media }) {
   const text = typeof s.text === 'function' ? s.text(egp(maxSaving())) : s.text;
   const item = look.media ? media[look.media] : null;
   const image = look.image ? media[look.image] : null;
+  const screen = look.screen ? media[look.screen] : null;
   return (
     <SpotlightCard
       theme={tone.theme}
@@ -101,11 +102,11 @@ function ServiceCard({ s, look, open, t, media }) {
         </span>
         <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone.chip}`}>{priceTag(look, t.services.priceTags)}</span>
       </div>
-      <div className="flex min-h-0 flex-1 flex-row gap-4 p-5 md:gap-5 md:p-8">
-        <div className="flex min-w-0 flex-1 flex-col">
+      <div className={`flex min-h-0 flex-1 gap-4 p-5 md:gap-5 md:p-8 ${screen ? 'flex-col-reverse' : 'flex-row'}`}>
+        <div className={`flex min-w-0 flex-col ${screen ? 'shrink-0' : 'flex-1'}`}>
           <h3 className="mt-auto text-[23px] font-medium leading-[1.15] tracking-[-0.03em] md:text-[34px]">{s.title}</h3>
           <p className={`mt-2 text-[14px] leading-relaxed md:mt-3 md:text-[15px] ${tone.sub}`}>{text}</p>
-          <div className="mt-5 hidden flex-wrap gap-1.5 sm:flex">
+          <div className={`mt-5 hidden flex-wrap gap-1.5 ${screen ? '' : 'sm:flex'} ${look.dashboard ? '[@media(max-height:860px)]:!hidden' : ''}`}>
             {s.tags.map(tag => (
               <span key={tag} className={`rounded-full px-3 py-1 text-[12px] font-medium ${tone.chip}`}>
                 {tag}
@@ -120,6 +121,7 @@ function ServiceCard({ s, look, open, t, media }) {
             </div>
           )}
         </div>
+        {screen && <Screen item={screen} src={screen.tile} onOpen={open} className="screen-fill w-full !rounded-xl" />}
         {item && (
           <button
             type="button"

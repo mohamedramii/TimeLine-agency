@@ -12,6 +12,7 @@ import Manifesto from './sections/Manifesto';
 import Showreel from './sections/Showreel';
 import Services from './sections/Services';
 import Work from './sections/Work';
+import Digital from './sections/Digital';
 import Process from './sections/Process';
 import Results from './sections/Results';
 import Pricing from './sections/Pricing';
@@ -25,6 +26,7 @@ const chapters = (
     <Showreel />
     <Services />
     <Work />
+    <Digital />
     <Process />
     <Results />
     <Pricing />
